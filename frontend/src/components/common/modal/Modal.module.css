@@ -1,0 +1,133 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modalContent {
+    position: absolute;
+    background: white;
+    width: 100vw;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    z-index: 1005;
+}
+.editable {
+    height: 100%;
+}
+.imageContainer {
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin-top: 16.9vw;
+    margin-bottom: 11.1vw;
+    max-height: 80vh;
+}
+.contentDetail {
+    width: 68.3vw;
+    /*height: 49.7vw;*/
+    z-index: 10000;
+}
+.leftArrow {
+    margin-right: auto;
+    width: 6.6vw;
+    margin-left: 5vw;
+    display: flex;
+    align-items: center;
+}
+.leftArrowImage {
+    width: 6.6vw;
+}
+.rightArrow {
+    width: 6.6vw;
+    margin-right: 5vw;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+.rightArrowImage {
+    width: 6.6vw;
+}
+.closeButton {
+    position: absolute; /* 절대 위치 설정 */
+    border: none;
+    background: none;
+    cursor: pointer;
+    width: 6.6vw;
+    top: 7vw;
+    right: 15vw;
+}
+@media (min-width: 1363px) {
+    .closeButton {
+        width: 90px;
+    }
+    .leftArrow {
+        width: 90px;
+    }
+    .rightArrow {
+        width: 90px;
+    }
+
+}
+@media(min-width: 1194px) {
+    .modalContent {
+        width: 1194px;
+    }
+}
+@media (min-width: 62.5rem) {
+    .leftArrow {
+        margin-left: 1.75rem;
+    }
+    .rightArrow {
+        margin-right: 1.75rem;
+    }
+}
+@media (max-width: 500px) {
+
+
+    .leftArrow {
+        margin-left: 6vw;
+    }
+    .rightArrow {
+        margin-top: 6vw;
+    }
+}
+@media (min-width: 428px) {
+    .closeButton {
+        top: 1.88rem
+    }
+}
+@media (min-width: 12.5rem) {
+    .closeButton {
+        right: 1.88rem;
+    }
+}
+@media (min-width: 473px) {
+    .imageContainer {
+        margin-top: 80px;
+    }
+}
+@media (min-width: 71.88rem) {
+    .imageContainer {
+        margin-bottom: 80px;
+    }
+}
+@media (min-width: 1207px) {
+    .imageContainer {
+        overflow-y: auto;
+        max-height: 80vh;
+    }
+
+}
+@media (min-width: 1303px) {
+    .contentDetail {
+        width: 890px;
+    }
+}

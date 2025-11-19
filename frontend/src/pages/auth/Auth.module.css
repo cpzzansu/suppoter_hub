@@ -1,0 +1,97 @@
+.label {
+    margin-bottom: 5px;
+    font-weight: 600;
+    font-size: 16px;
+}
+.loginInput {
+    width: 350px;
+    height: 35px;
+    border-radius: 8px;
+    border: 1px solid #c0c0c0;
+    font-size: 16px;
+    padding-left: 15px;
+    box-sizing: border-box;
+}
+.loginInput::placeholder {
+    color: #c0c0c0;
+}
+.loginTitle {
+    color: #2DB384;
+    font-size: 35px;
+    font-weight: 800;
+}
+.AuthFormContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff;
+    padding: 60px 40px;
+    border-radius: 50px;
+    gap: 30px;
+}
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.submitButton {
+    width:350px;
+    height: 35px;
+    border-radius: 8px;
+    border: 1px solid #2DB384;
+    background-color: #2DB384;
+    color: #ffffff;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 40px;
+}
+.errorLoginInput {
+    width: 350px;
+    height: 35px;
+    border-radius: 8px;
+    border: 1px solid #c0c0c0;
+    font-size: 16px;
+    padding-left: 15px;
+    box-sizing: border-box;
+}
+.errorLoginInput::placeholder {
+    color: #c0c0c0;
+}
+
+@media (max-width: 700px) {
+    .errorLoginInput {
+        width: 79.54vw;
+        height: 8.95vw;
+        border-radius: 1.81vw;
+        font-size: 3.63vw;
+        padding-left: 3.4vw;
+    }
+    .AuthFormContainer {
+        padding: 10.9vw 7.27vw;
+        border-radius: 10vw;
+        gap: 6vw;
+    }
+    .loginTitle {
+        font-size: 7.95vw;
+    }
+    .label {
+        margin-bottom: 1.13vw;
+        font-size: 3.63vw;
+    }
+    .loginInput {
+        width: 79.54vw;
+        height: 8.95vw;
+        border-radius: 1.81vw;
+        font-size: 3.63vw;
+        padding-left: 3.4vw;
+    }
+    .submitButton {
+        width: 79.54vw;
+        height: 8.95vw;
+        border-radius: 1.81vw;
+        font-size: 3.63vw;
+        margin-top: 8vw;
+    }
+}

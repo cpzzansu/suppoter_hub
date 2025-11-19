@@ -1,0 +1,19 @@
+body {
+  font-family: 'Noto Sans KR',  "Noto Sans", sans-serif;
+  background-color: #F4F3F2;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  vertical-align: baseline;
+}
+@font-face {
+  font-family: 'PaperLogy';
+  src: url('/assets/font/paperlogy/Paperlogy-8ExtraBold.woff') format('woff');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+input:focus{
+  outline: none;
+}
+
