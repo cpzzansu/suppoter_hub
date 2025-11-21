@@ -12,8 +12,7 @@ const Complete = () => {
           color: '#2DB384',
         }}
       >
-        <div>전주 · 완주 통합되면</div>
-        <div>이렇게 좋아집니다!</div>
+        <img style={{width: '100%'}} src="/assets/images/Logo.png" alt="로고"/>
       </div>
       <div
         style={{
@@ -43,9 +42,6 @@ const Complete = () => {
             }}
           >
             제출이 완료되었습니다.
-          </div>
-          <div style={{ fontSize: '3.02vw', fontWeight: 600 }}>
-            추후 기재해 주신 번호로 자료를 보내드립니다.
           </div>
         </div>
       </div>
