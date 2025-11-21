@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  // baseURL: 'https://wanjeon.co.kr/api',
-  baseURL: 'http://localhost:8080/api',
+  baseURL: 'https://support.wanjeon.co.kr/api',
+  // baseURL: 'http://localhost:8080/api',
   timeout: 5000,
   headers: { 'Content-Type': 'application/json' },
 });

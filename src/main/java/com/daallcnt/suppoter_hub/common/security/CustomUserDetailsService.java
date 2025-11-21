@@ -3,7 +3,7 @@ package com.daallcnt.suppoter_hub.common.security;
 
 
 import com.daallcnt.suppoter_hub.form.entity.Member;
-import com.daallcnt.suppoter_hub.form.repository.MemberRepository;
+import com.daallcnt.suppoter_hub.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;

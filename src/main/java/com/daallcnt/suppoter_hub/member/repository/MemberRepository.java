@@ -1,4 +1,4 @@
-package com.daallcnt.suppoter_hub.form.repository;
+package com.daallcnt.suppoter_hub.member.repository;
 
 import com.daallcnt.suppoter_hub.form.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -2,7 +2,7 @@ package com.daallcnt.suppoter_hub.common.config;
 
 import com.daallcnt.suppoter_hub.form.entity.Member;
 import com.daallcnt.suppoter_hub.form.entity.Role;
-import com.daallcnt.suppoter_hub.form.repository.MemberRepository;
+import com.daallcnt.suppoter_hub.member.repository.MemberRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ public class DataInitializer {
                                             PasswordEncoder passwordEncoder) {
         return args -> {
             if (memberRepo.findByMemberId("admin").isEmpty()) {
-                String encoded = passwordEncoder.encode("suppoter!@");
+                String encoded = passwordEncoder.encode("supporter!@");
 
                 Member m = Member.builder()
                         .memberId("admin")

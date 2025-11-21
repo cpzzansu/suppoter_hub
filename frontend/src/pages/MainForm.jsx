@@ -46,10 +46,13 @@ const MainForm = () => {
         flexDirection: 'column',
       }}
     >
+      <div>
+        <img style={{width: '100%'}} src="/assets/images/Logo.png" alt="로고"/>
+      </div>
       <div style={{ position: 'relative', width: '100%' }}>
         <div
           style={{
-            marginTop: '26.67vw',
+            marginTop: '10vw',
             paddingLeft: '3.22vw',
             paddingRight: '3.22vw',
             display: 'flex',
