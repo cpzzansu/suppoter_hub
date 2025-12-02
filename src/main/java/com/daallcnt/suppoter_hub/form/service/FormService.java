@@ -7,9 +7,11 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface FormService {
-    void form(FormDataDto formDataDto, int pageNumber);
+    void form(FormDataDto formDataDto);
 
     ResponseEntity<List<SuppoterNode>> fetchTreeMap(int currentPage);
 
     ResponseEntity<List<Integer>> fetchPageNumberList();
+
+    ResponseEntity<List<SuppoterNode>> fetchSheetSupporter();
 }

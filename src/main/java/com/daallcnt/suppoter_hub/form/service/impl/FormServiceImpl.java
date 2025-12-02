@@ -23,24 +23,25 @@ public class FormServiceImpl implements FormService {
     private final SuppoterRepository suppoterRepository;
 
     @Override
-    public void form(FormDataDto formDataDto, int pageNumber) {
+    public void form(FormDataDto formDataDto) {
         Suppoter recommender = resolveRecommender(formDataDto.getRecommend());
 
-        Suppoter suppoter = buildSuppoter(formDataDto, recommender, pageNumber);
+        Suppoter suppoter = buildSuppoter(formDataDto, recommender);
         suppoterRepository.save(suppoter);
     }
 
     @Override
     public ResponseEntity<List<SuppoterNode>> fetchTreeMap(int currentPage) {
-        List<Suppoter> rootSupporterList =  suppoterRepository.findByPageNumberAndRecommenderIsNull(currentPage);
+        log.info("Fetching tree map");
+        List<Suppoter> rootSupporterList = suppoterRepository.findByRecommendContaining("대표");
+
+        for (Suppoter suppoter : rootSupporterList) {
+            log.info("Found root suppoter: {}", suppoter);
+        }
 
         List<SuppoterNode> rootNodes = rootSupporterList.stream()
-                .map(this::toNodeRecursively)
+                .map(r -> toNodeRecursively(r, 0))
                 .toList();
-
-        for (SuppoterNode suppoterNode : rootNodes) {
-            computeDescendantCount(suppoterNode);
-        }
 
         return ResponseEntity.ok(rootNodes);
     }
@@ -50,6 +51,17 @@ public class FormServiceImpl implements FormService {
         List<Integer> pageNumberList = suppoterRepository.findPageNumberAll();
 
         return ResponseEntity.ok(pageNumberList);
+    }
+
+    @Override
+    public ResponseEntity<List<SuppoterNode>> fetchSheetSupporter() {
+        List<Suppoter> rootSupporterList = suppoterRepository.findByRecommendContaining("대표");
+
+        List<SuppoterNode> rootNodes = rootSupporterList.stream()
+                .map(r -> toNodeRecursively(r, 0))
+                .toList();
+
+        return ResponseEntity.ok(rootNodes);
     }
 
     private Suppoter resolveRecommender(String recommendName) {
@@ -66,14 +78,14 @@ public class FormServiceImpl implements FormService {
         return null;
     }
 
-    private Suppoter buildSuppoter(FormDataDto formDataDto, Suppoter recommender, int pageNumber) {
+    private Suppoter buildSuppoter(FormDataDto formDataDto, Suppoter recommender) {
         return Suppoter.builder()
-                .pageNumber(pageNumber)
                 .name(formDataDto.getName())
                 .phone(formDataDto.getPhone())
                 .address(formDataDto.getAddress())
                 .recommend(formDataDto.getRecommend())
                 .recommender(recommender)
+                .isRightsMember(formDataDto.getIsRightsMember())
                 .createdAt(LocalDateTime.now())
                 .build();
     }
@@ -87,16 +99,21 @@ public class FormServiceImpl implements FormService {
         return count;
     }
 
-    private SuppoterNode toNodeRecursively(Suppoter entity) {
+    private SuppoterNode toNodeRecursively(Suppoter entity, int depth) {
         SuppoterNode node = new SuppoterNode(entity);
+        node.setDepth(depth); // SuppoterNode에 depth 필드 추가
 
-        if (entity.getRecommendedList() != null && !entity.getRecommendedList().isEmpty()) {
-            for (Suppoter child : entity.getRecommendedList()) {
-                SuppoterNode childNode = toNodeRecursively(child);
+        int descendants = 0;
+        List<Suppoter> children = entity.getRecommendedList();
+        if (children != null && !children.isEmpty()) {
+            for (Suppoter child : children) {
+                SuppoterNode childNode = toNodeRecursively(child, depth + 1);
                 node.getChildren().add(childNode);
+                descendants += 1 + childNode.getTotalDescendantCount();
             }
         }
 
+        node.setTotalDescendantCount(descendants);
         return node;
     }
 }

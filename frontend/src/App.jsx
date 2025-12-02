@@ -10,7 +10,7 @@ import ModifyInfo from './components/tree/ModifyInfo.jsx';
 function App() {
   return (
     <Routes>
-      <Route path={'/:pageNumber'} element={<MainForm />} />
+      <Route path={'/'} element={<MainForm />} />
       <Route path={'/complete'} element={<Complete />} />
       <Route
         path={'/admin'}

@@ -19,9 +19,11 @@ public class SuppoterNode {
     private String address;
     private String recommend;
     private String recommendPhone;
+    private Boolean isRightsMember;
     private List<SuppoterNode> children = new ArrayList<>();
 
     private int totalDescendantCount;
+    private int depth;
 
     public SuppoterNode(Suppoter e) {
        this.id = e.getId();
@@ -29,5 +31,6 @@ public class SuppoterNode {
        this.phone = e.getPhone();
        this.address = e.getAddress();
        this.recommend = e.getRecommend();
+       this.isRightsMember = e.getIsRightsMember();
     }
 }

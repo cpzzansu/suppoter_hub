@@ -13,4 +13,6 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
 
     @Query("SELECT DISTINCT pageNumber FROM Suppoter where pageNumber is not null order by pageNumber")
     List<Integer> findPageNumberAll();
+
+    List<Suppoter> findByRecommendContaining(String keyword);
 }

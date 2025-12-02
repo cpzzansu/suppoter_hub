@@ -27,6 +27,7 @@ public class Suppoter {
     private String recommend;
     private String domainName;
     private int pageNumber;
+    private Boolean isRightsMember;
 
     private LocalDateTime createdAt;
 

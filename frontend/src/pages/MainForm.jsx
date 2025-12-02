@@ -5,7 +5,7 @@ import { formatFourDigits, formatPhoneNumber } from '../utils/commonUtil.js';
 import { validateForm } from '../utils/validate.js';
 
 const MainForm = () => {
-  const { pageNumber } = useParams();
+  // const { pageNumber } = useParams();
 
   const navigate = useNavigate();
 
@@ -34,7 +34,7 @@ const MainForm = () => {
     //   body: JSON.stringify(formData),
     // });
 
-    await submitForm({ pageNumber: pageNumber, formData }).then(() => {
+    await submitForm({ formData }).then(() => {
       navigate('/complete');
     });
   };
@@ -48,6 +48,7 @@ const MainForm = () => {
     >
       <div>
         <img style={{width: '100%'}} src="/assets/images/Logo.png" alt="로고"/>
+        {/*<img style={{width: '100%'}} src="/assets/images/Logo2.png" alt="로고"/>*/}
       </div>
       <div style={{ position: 'relative', width: '100%' }}>
         <div
@@ -68,7 +69,7 @@ const MainForm = () => {
                 setFormData({ ...formData, name: e.target.value })
               }
             />
-            <FormLabel labelName={'연락처'} subLabel={'ex) 010-1234-5678'} />
+            <FormLabel labelName={'연락처'} />
             <FormInput
               type={'text'}
               value={formData.phone}
@@ -79,8 +80,8 @@ const MainForm = () => {
               }}
             />
             <FormLabel
-              labelName={'지역 (시 · 군 · 구 / 읍 · 면 · 동)'}
-              subLabel={'ex) 완주군 용진읍'}
+              labelName={'지역 '}
+              strongLabel={'(동 · 읍 · 면 표기)'}
             />
             <FormInput
               type={'text'}
@@ -92,12 +93,12 @@ const MainForm = () => {
             <FormLabel
                 labelName={'권리당원 유무'}
             />
-            <div style={{display: 'flex', alignItems: 'center', marginBottom: '5vw'}}>
+            <div style={{display: 'flex', alignItems: 'center', marginBottom: '5vw', fontSize: '4vw'}}>
               <div style={{display: 'flex', alignItems: 'center', cursor: 'pointer'}} onClick={() => setFormData({ ...formData, isRightsMember: true })}>
                 <img
                     style={{
-                      width: '3.54vw',
-                      marginRight: '1.56vw',
+                      width: '7vw',
+                      marginRight: '3vw',
                     }}
                     src={
                       formData.isRightsMember
@@ -111,8 +112,8 @@ const MainForm = () => {
               <div style={{display: 'flex', alignItems: 'center', cursor: 'pointer'}} onClick={() => setFormData({ ...formData, isRightsMember: false })}>
                 <img
                   style={{
-                    width: '3.54vw',
-                    marginRight: '1.56vw',
+                    width: '7vw',
+                    marginRight: '3vw',
                     marginLeft: '5vw',
                   }}
                   src={
@@ -154,7 +155,7 @@ const MainForm = () => {
             >
               <img
                 style={{
-                  width: '3.54vw',
+                  width: '7vw',
                   marginRight: '1.56vw',
                 }}
                 src={
@@ -228,7 +229,7 @@ const MainForm = () => {
           >
             {'개인정보 수집·이용 동의서\n' +
               '\n' +
-              '성장사다리완주포럼(이하 “회사”)는 개인정보보호법 등 관계 법령에 따라 이용자의 개인정보를 안전하게 처리하기 위해 아래와 같이 개인정보 수집·이용 동의를 받고자 합니다.\n' +
+              '함께해요-관영.com(이하 “회사”)는 개인정보보호법 등 관계 법령에 따라 이용자의 개인정보를 안전하게 처리하기 위해 아래와 같이 개인정보 수집·이용 동의를 받고자 합니다.\n' +
               '\t\n' +
               '1.\t수집하는 개인정보 항목\n' +
               '\t•\t성명\n' +
@@ -256,9 +257,9 @@ const MainForm = () => {
               '\t•\t다만, 필수항목에 대한 동의를 거부하실 경우 서비스 이용이 제한될 수 있습니다.\n' +
               '\n' +
               '\t 6.\t개인정보 보호책임자\n' +
-              '\t•\t성명 : 김용현\n' +
+              '\t•\t성명 : 홍민희\n' +
               '\t•\t직위 : 팀장\n' +
-              '\t•\t연락처: 010-9810-7840'}
+              '\t•\t연락처: 010-6689-2503'}
           </div>
         </div>
       )}
@@ -292,7 +293,7 @@ const MainForm = () => {
   );
 };
 
-const FormLabel = ({ labelName, subLabel }) => {
+const FormLabel = ({ labelName, subLabel, strongLabel }) => {
   return (
     <div
       style={{ fontSize: '4.16vw', fontWeight: 600, marginBottom: '2.08vw' }}
@@ -300,6 +301,9 @@ const FormLabel = ({ labelName, subLabel }) => {
       {labelName}
       {subLabel && (
         <span style={{ color: '#939393', fontSize: '2.6vw' }}> {subLabel}</span>
+      )}
+      {strongLabel && (
+          <span style={{ fontWeight: 900 }}> {strongLabel}</span>
       )}
     </div>
   );
