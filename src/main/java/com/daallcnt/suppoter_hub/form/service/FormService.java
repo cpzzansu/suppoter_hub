@@ -14,4 +14,6 @@ public interface FormService {
     ResponseEntity<List<Integer>> fetchPageNumberList();
 
     ResponseEntity<List<SuppoterNode>> fetchSheetSupporter();
+
+    ResponseEntity<SuppoterNode> fetchLeaderNode(Long leaderId);
 }

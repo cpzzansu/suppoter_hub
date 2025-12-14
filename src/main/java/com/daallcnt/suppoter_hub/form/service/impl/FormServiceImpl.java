@@ -1,5 +1,6 @@
 package com.daallcnt.suppoter_hub.form.service.impl;
 
+import com.daallcnt.suppoter_hub.common.exception.DuplicationSupporterException;
 import com.daallcnt.suppoter_hub.form.entity.Suppoter;
 import com.daallcnt.suppoter_hub.form.payload.FormDataDto;
 import com.daallcnt.suppoter_hub.form.payload.SuppoterNode;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +26,10 @@ public class FormServiceImpl implements FormService {
 
     @Override
     public void form(FormDataDto formDataDto) {
+        if (suppoterRepository.existsByPhone(formDataDto.getPhone())){
+            throw new DuplicationSupporterException("이미 등록되어 있어요.");
+        }
+
         Suppoter recommender = resolveRecommender(formDataDto.getRecommend());
 
         Suppoter suppoter = buildSuppoter(formDataDto, recommender);
@@ -62,6 +68,15 @@ public class FormServiceImpl implements FormService {
                 .toList();
 
         return ResponseEntity.ok(rootNodes);
+    }
+
+    @Override
+    public ResponseEntity<SuppoterNode> fetchLeaderNode(Long leaderId) {
+        Suppoter leaderSupporter = suppoterRepository.findById(leaderId).orElseThrow();
+
+        SuppoterNode leaderNode = toNodeRecursively(leaderSupporter, 0);
+
+        return ResponseEntity.ok(leaderNode);
     }
 
     private Suppoter resolveRecommender(String recommendName) {

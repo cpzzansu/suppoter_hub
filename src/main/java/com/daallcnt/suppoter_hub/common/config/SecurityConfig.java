@@ -31,6 +31,7 @@ public class SecurityConfig {
             "/",
             "/api/form",
             "/api/login",
+            "/api/supporterHome/login",
             "/actuator/health/login",
             "/api/fetchSheetSupporter",
     };

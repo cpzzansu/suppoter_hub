@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { href, useNavigate, useParams } from 'react-router-dom';
 import { submitForm } from '../apis/form/formApi.js';
 import { formatFourDigits, formatPhoneNumber } from '../utils/commonUtil.js';
 import { validateForm } from '../utils/validate.js';
@@ -34,9 +34,17 @@ const MainForm = () => {
     //   body: JSON.stringify(formData),
     // });
 
-    await submitForm({ formData }).then(() => {
-      navigate('/complete');
-    });
+    await submitForm({ formData })
+      .then(() => {
+        navigate('/complete');
+      })
+      .catch((error) => {
+        if (error.status === 409) {
+          alert('이미 가입된 전화번호입니다.');
+        } else {
+          alert('제출에 실패했습니다.');
+        }
+      });
   };
 
   return (
@@ -47,8 +55,36 @@ const MainForm = () => {
       }}
     >
       <div>
-        <img style={{width: '100%'}} src="/assets/images/Logo.png" alt="로고"/>
+        <img
+          style={{ width: '100%' }}
+          src='/assets/images/form_logo.png'
+          alt='로고'
+        />
         {/*<img style={{width: '100%'}} src="/assets/images/Logo2.png" alt="로고"/>*/}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'end', marginTop: '4vw' }}>
+        <button
+          style={{
+            padding: '1.9vw 10vw',
+            fontSize: '3.33vw',
+            fontWeight: 'bold',
+            color: 'white',
+            border: 'none',
+            backgroundColor: '#0F418E',
+            borderRadius: '5px',
+            marginRight: '6vw',
+            cursor: 'pointer',
+          }}
+          onClick={() =>
+            (window.location.href =
+              'https://home.xn----qd6ew2cx70c6uae40epc.com/login/')
+          }
+        >
+          <div>
+            <div>기존회원</div>
+            <div>로그인하기</div>
+          </div>
+        </button>
       </div>
       <div style={{ position: 'relative', width: '100%' }}>
         <div
@@ -81,7 +117,7 @@ const MainForm = () => {
             />
             <FormLabel
               labelName={'지역 '}
-              strongLabel={'(동 · 읍 · 면 표기)'}
+              strongLabel={'(시 · 군 · 읍 · 면 · 동 표기)'}
             />
             <FormInput
               type={'text'}
@@ -90,26 +126,49 @@ const MainForm = () => {
                 setFormData({ ...formData, address: e.target.value })
               }
             />
-            <FormLabel
-                labelName={'권리당원 유무'}
-            />
-            <div style={{display: 'flex', alignItems: 'center', marginBottom: '5vw', fontSize: '4vw'}}>
-              <div style={{display: 'flex', alignItems: 'center', cursor: 'pointer'}} onClick={() => setFormData({ ...formData, isRightsMember: true })}>
+            <FormLabel labelName={'권리당원 유무'} />
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '5vw',
+                fontSize: '4vw',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                }}
+                onClick={() =>
+                  setFormData({ ...formData, isRightsMember: true })
+                }
+              >
                 <img
-                    style={{
-                      width: '7vw',
-                      marginRight: '3vw',
-                    }}
-                    src={
-                      formData.isRightsMember
-                          ? '/assets/images/checkedbox.png'
-                          : '/assets/images/checkbox.png'
-                    }
-                    alt='체크박스'
+                  style={{
+                    width: '7vw',
+                    marginRight: '3vw',
+                  }}
+                  src={
+                    formData.isRightsMember
+                      ? '/assets/images/checkedbox.png'
+                      : '/assets/images/checkbox.png'
+                  }
+                  alt='체크박스'
                 />
                 예
               </div>
-              <div style={{display: 'flex', alignItems: 'center', cursor: 'pointer'}} onClick={() => setFormData({ ...formData, isRightsMember: false })}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                }}
+                onClick={() =>
+                  setFormData({ ...formData, isRightsMember: false })
+                }
+              >
                 <img
                   style={{
                     width: '7vw',
@@ -118,8 +177,8 @@ const MainForm = () => {
                   }}
                   src={
                     !formData.isRightsMember
-                        ? '/assets/images/checkedbox.png'
-                        : '/assets/images/checkbox.png'
+                      ? '/assets/images/checkedbox.png'
+                      : '/assets/images/checkbox.png'
                   }
                   alt='체크박스'
                 />
@@ -302,9 +361,7 @@ const FormLabel = ({ labelName, subLabel, strongLabel }) => {
       {subLabel && (
         <span style={{ color: '#939393', fontSize: '2.6vw' }}> {subLabel}</span>
       )}
-      {strongLabel && (
-          <span style={{ fontWeight: 900 }}> {strongLabel}</span>
-      )}
+      {strongLabel && <span style={{ fontWeight: 900 }}> {strongLabel}</span>}
     </div>
   );
 };

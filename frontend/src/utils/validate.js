@@ -5,6 +5,7 @@ export function validatePhoneNumber(formatted) {
 }
 
 export const validateForm = (formData, isPrivacyAgree) => {
+  console.log(formData);
   if (formData.name.length === 0) {
     alert('이름을 입력해주세요.');
     return false;

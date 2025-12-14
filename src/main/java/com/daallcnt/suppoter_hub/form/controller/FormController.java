@@ -31,6 +31,12 @@ public class FormController {
         return formService.fetchTreeMap(currentPage);
     }
 
+    @GetMapping("/fetchLeaderNode")
+    public ResponseEntity<SuppoterNode> fetchLeaderNode(@RequestParam(name = "leaderId") Long leaderId) {
+        log.debug("fetchLeaderNode leaderId: {}", leaderId);
+        return formService.fetchLeaderNode(leaderId);
+    }
+
     @GetMapping("/fetchPageNumberList")
     public ResponseEntity<List<Integer>> fetchPageNumberList() {
         log.debug("fetchPageNumberList");
@@ -42,5 +48,4 @@ public class FormController {
         log.debug("fetchSheetSupporter");
         return formService.fetchSheetSupporter();
     }
-
 }

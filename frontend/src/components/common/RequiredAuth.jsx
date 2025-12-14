@@ -1,8 +1,8 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { clearAuth, isTokenValid } from '../../utils/auth.js';
 
-const RequiresAuth = ({ children }) => {
+export default function RequiresAuth() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -13,7 +13,6 @@ const RequiresAuth = ({ children }) => {
       navigate('/login', { replace: true, state: { from: location } });
     }
   }, [navigate, location]);
-  return children;
-};
 
-export default RequiresAuth;
+  return <Outlet />;
+}

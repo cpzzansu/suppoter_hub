@@ -12,7 +12,11 @@ const Complete = () => {
           color: '#2DB384',
         }}
       >
-        <img style={{width: '100%'}} src="/assets/images/Logo.png" alt="로고"/>
+        <img
+          style={{ width: '100%' }}
+          src='/assets/images/complete_logo.png'
+          alt='로고'
+        />
       </div>
       <div
         style={{

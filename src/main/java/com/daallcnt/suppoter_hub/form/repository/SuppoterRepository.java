@@ -5,9 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
     List<Suppoter> findByName(String recommendName);
+
 
     List<Suppoter> findByPageNumberAndRecommenderIsNull(int pageNumber);
 
@@ -15,4 +17,6 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
     List<Integer> findPageNumberAll();
 
     List<Suppoter> findByRecommendContaining(String keyword);
+
+    boolean existsByPhone(String phone);
 }

@@ -5,6 +5,11 @@ export const fetchPageNumberListApi = async () => {
   return data;
 };
 
+export const fetchLeaderNodeApi = async ({ leaderId }) => {
+  const { data } = await api.get('/fetchLeaderNode?leaderId=' + leaderId);
+  return data;
+};
+
 export const fetchTreeMapApi = async ({ currentPage }) => {
   const { data } = await api.get('/fetchTreeMap?currentPage=' + currentPage);
   return data;
