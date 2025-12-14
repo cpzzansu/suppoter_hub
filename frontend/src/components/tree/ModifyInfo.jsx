@@ -1,9 +1,12 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchModifyInfoApi } from '../../apis/admin/adminApi.js';
+import {
+  fetchModifyInfoApi,
+  findRecommendApi,
+} from '../../apis/admin/adminApi.js';
 import { formatFourDigits, formatPhoneNumber } from '../../utils/commonUtil.js';
 import { checkModifyValue, validateForm } from '../../utils/validate.js';
-import { forwardRef, useRef } from 'react';
+import { forwardRef, useCallback, useRef, useState } from 'react';
 import { modifyForm } from '../../apis/form/formApi.js';
 import styles from './Tree.module.css';
 
@@ -14,6 +17,57 @@ const ModifyInfo = () => {
   const queryClient = useQueryClient();
 
   const formRefs = useRef({});
+
+  const [recommendList, setRecommendList] = useState([]);
+  const [selectedRecommend, setSelectedRecommend] = useState({});
+
+  const backdropPointerDownOnSelf = useRef(false);
+
+  const handleBackdropPointerDown = (e) => {
+    // 백드롭 자체를 직접 누른 경우에만 true
+    backdropPointerDownOnSelf.current = e.target === e.currentTarget;
+  };
+
+  const handleBackdropPointerUp = (e) => {
+    // 다운과 업이 모두 백드롭에서 일어났을 때만 닫기
+    if (backdropPointerDownOnSelf.current && e.target === e.currentTarget) {
+      navigate(-1);
+    }
+    backdropPointerDownOnSelf.current = false;
+  };
+
+  const updateRecommendMutation = useMutation({
+    mutationFn: findRecommendApi,
+    onSuccess: (data) => {
+      if (data.length === 0) {
+        alert('추천인이 없습니다.');
+        return;
+      }
+
+      if (data.length === 1) {
+        setSelectedRecommend(data[0]);
+      } else {
+        setRecommendList(data);
+      }
+    },
+    onError: (err, vars) => {
+      console.error('추천인 찾기 실패', err);
+      alert('추천인이 없습니다.');
+    },
+  });
+
+  const handleRecommendBlur = useCallback(
+    (e) => {
+      const input = e.target;
+      const next = (input.value ?? '').trim();
+      const prev = (data.recommend ?? '').trim();
+
+      if (next === prev) return;
+
+      updateRecommendMutation.mutate({ recommend: next });
+    },
+    [updateRecommendMutation],
+  );
 
   const modifyMutation = useMutation({
     mutationFn: modifyForm,
@@ -40,7 +94,11 @@ const ModifyInfo = () => {
   if (isError) return <div>오류가 발생했습니다.</div>;
 
   return (
-    <div className={styles.modal} onClick={() => navigate(-1)}>
+    <div
+      className={styles.modal}
+      onPointerDown={handleBackdropPointerDown}
+      onPointerUp={handleBackdropPointerUp}
+    >
       <div className={styles.container} onClick={(e) => e.stopPropagation()}>
         <ModalValueContainer>
           <ModalLabel>이름</ModalLabel>
@@ -79,18 +137,19 @@ const ModifyInfo = () => {
             ref={(el) => {
               formRefs.current['recommend'] = el;
             }}
+            onBlur={handleRecommendBlur}
+            disabled={updateRecommendMutation.isPending}
           />
         </ModalValueContainer>
-        <ModalValueContainer>
-          <ModalLabel>추천인 코드</ModalLabel>
-          <ModalInput
-            defaultValue={data.recommendPhone}
-            ref={(el) => {
-              formRefs.current['recommendPhone'] = el;
-            }}
-            onInput={(e) => (e.target.value = formatFourDigits(e.target.value))}
-          />
-        </ModalValueContainer>
+        {recommendList.length > 0 &&
+          recommendList.map((recommend) => (
+            <button
+              style={{ padding: '1vw', margin: '0.5vw', cursor: 'pointer' }}
+              onClick={() => setSelectedRecommend(recommend)}
+            >
+              {recommend.name + ' ' + recommend.phone}
+            </button>
+          ))}
         <div
           style={{
             display: 'flex',
@@ -126,13 +185,14 @@ const ModifyInfo = () => {
               color: 'black',
             }}
             onClick={() => {
+              console.log(selectedRecommend.id);
               const formData = {
                 id: data.id,
                 name: formRefs.current['name'].value,
                 phone: formRefs.current['phone'].value,
                 address: formRefs.current['address'].value,
                 recommend: formRefs.current['recommend'].value,
-                recommendPhone: formRefs.current['recommendPhone'].value,
+                selectedRecommendId: selectedRecommend.id,
               };
 
               const valueEqual = checkModifyValue({
@@ -142,6 +202,11 @@ const ModifyInfo = () => {
 
               if (valueEqual) {
                 alert('값이 변하지 않았습니다.');
+                return;
+              }
+
+              if (!selectedRecommend) {
+                alert('올바른 추천인을 선택해주세요.');
                 return;
               }
 

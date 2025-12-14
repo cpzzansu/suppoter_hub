@@ -38,11 +38,11 @@ public class FormServiceImpl implements FormService {
 
     @Override
     public ResponseEntity<List<SuppoterNode>> fetchTreeMap(int currentPage) {
-        log.info("Fetching tree map");
+        log.debug("Fetching tree map");
         List<Suppoter> rootSupporterList = suppoterRepository.findByRecommendContaining("대표");
 
         for (Suppoter suppoter : rootSupporterList) {
-            log.info("Found root suppoter: {}", suppoter);
+            log.debug("Found root suppoter: {}", suppoter);
         }
 
         List<SuppoterNode> rootNodes = rootSupporterList.stream()

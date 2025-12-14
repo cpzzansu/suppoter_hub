@@ -36,7 +36,7 @@ const Login = () => {
     onSuccess: (data) => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('memberId', data.memberId);
-      navigate('/admin');
+      navigate('/admin/home');
     },
     onError: (error) => {
       alert('아이디 또는 비밀번호가 잘못 되었습니다. ');

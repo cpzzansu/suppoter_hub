@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import Xarrow from 'react-xarrows';
 
 const AdminHome = () => {
+  const navigate = useNavigate();
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['fetchTreeMap'],
     queryFn: () => fetchTreeMapApi({ currentPage: 0 }),
@@ -11,8 +13,30 @@ const AdminHome = () => {
 
   return (
     <div style={{ marginLeft: '45px' }}>
-      <AdminPageTitle title={'관리자 페이지'} />
-      <div style={{ display: 'flex', gap: '16px', marginTop: '30px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          marginTop: '35px',
+        }}
+      >
+        <AdminPageTitle title={'관리자 페이지'} />
+        <button
+          style={{ padding: '1vw', marginLeft: '2vw', cursor: 'pointer' }}
+          onClick={() => navigate('/admin/recommendMissing')}
+        >
+          미적용 데이터
+        </button>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          gap: '16px',
+          marginTop: '30px',
+          flexWrap: 'wrap',
+        }}
+      >
         {data &&
           data.length > 0 &&
           data.map((item) => <LeaderButton item={item} />)}
@@ -51,9 +75,7 @@ const LeaderButton = ({ item }) => {
 const AdminPageTitle = ({ title }) => {
   return (
     <>
-      <div style={{ fontSize: '35px', fontWeight: 800, marginTop: '35px' }}>
-        {title}
-      </div>
+      <div style={{ fontSize: '35px', fontWeight: 800 }}>{title}</div>
     </>
   );
 };

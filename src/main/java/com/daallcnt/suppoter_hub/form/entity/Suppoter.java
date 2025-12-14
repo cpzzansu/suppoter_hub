@@ -1,6 +1,6 @@
 package com.daallcnt.suppoter_hub.form.entity;
 
-import com.daallcnt.suppoter_hub.form.payload.FormDataDto;
+import com.daallcnt.suppoter_hub.supporterhome.payload.FormDataDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,10 +39,11 @@ public class Suppoter {
     @OneToMany(mappedBy = "recommender", cascade = CascadeType.ALL)
     private List<Suppoter> recommendedList = new ArrayList<>();
 
-    public void modifyForm(FormDataDto formDataDto) {
+    public void modifyForm(FormDataDto formDataDto, Suppoter recommender) {
         this.name = formDataDto.getName();
         this.phone = formDataDto.getPhone();
         this.address = formDataDto.getAddress();
         this.recommend = formDataDto.getRecommend();
+        this.recommender = recommender;
     }
 }

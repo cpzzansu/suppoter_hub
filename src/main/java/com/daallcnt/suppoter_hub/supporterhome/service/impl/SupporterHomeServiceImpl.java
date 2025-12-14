@@ -5,8 +5,10 @@ import com.daallcnt.suppoter_hub.form.entity.Member;
 import com.daallcnt.suppoter_hub.form.entity.Role;
 import com.daallcnt.suppoter_hub.form.entity.Suppoter;
 import com.daallcnt.suppoter_hub.form.payload.LoginResponseDto;
+import com.daallcnt.suppoter_hub.form.payload.SuppoterNode;
 import com.daallcnt.suppoter_hub.form.repository.SuppoterRepository;
 import com.daallcnt.suppoter_hub.member.repository.MemberRepository;
+import com.daallcnt.suppoter_hub.supporterhome.payload.FormDataDto;
 import com.daallcnt.suppoter_hub.supporterhome.payload.SupporterHomeLoginDto;
 import com.daallcnt.suppoter_hub.supporterhome.service.SupporterHomeService;
 import jakarta.transaction.Transactional;
@@ -20,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -67,5 +70,41 @@ public class SupporterHomeServiceImpl implements SupporterHomeService {
                 .build();
 
         return ResponseEntity.ok(loginResponseDto);
+    }
+
+    @Override
+    public ResponseEntity<SuppoterNode> getModifyInfo(long id) {
+        Suppoter suppoter = suppoterRepository.findById(id).orElse(null);
+
+        if  (suppoter == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+        return ResponseEntity.ok(new SuppoterNode(suppoter));
+    }
+
+    @Override
+    public ResponseEntity<List<SuppoterNode>> findRecommend(String recommend) {
+        List<Suppoter> suppoterList = suppoterRepository.findByName(recommend);
+        if (suppoterList.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+        return ResponseEntity.ok(suppoterList.stream().map(SuppoterNode::new).toList());
+    }
+
+    @Override
+    public void modifyForm(FormDataDto formDataDto) {
+        Suppoter recommender = suppoterRepository.findById(formDataDto.getSelectedRecommendId()).orElse(null);
+        if (recommender == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+        Suppoter suppoter = suppoterRepository.findById(formDataDto.getId()).orElse(null);
+        if (suppoter == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+        suppoter.modifyForm(formDataDto, recommender);
+        suppoterRepository.save(suppoter);
+    }
+
+    @Override
+    public ResponseEntity<List<SuppoterNode>> fetchRecommendMissing() {
+        List<Suppoter> suppoterList = suppoterRepository.findByRecommenderIsNullAndRecommendNot("대표");
+
+        return ResponseEntity.ok(suppoterList.stream().map(SuppoterNode::new).toList());
     }
 }

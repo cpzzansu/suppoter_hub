@@ -9,6 +9,7 @@ import ModifyInfo from './components/tree/ModifyInfo.jsx';
 import AdminHome from './pages/admin/AdminHome.jsx';
 import RequiresAuth from './components/common/RequiredAuth.jsx';
 import AdminLeaderTree from './pages/admin/AdminLeaderTree.jsx';
+import AdminRecommendMissing from './pages/admin/AdminRecommendMissing.jsx';
 
 function App() {
   return (
@@ -18,10 +19,14 @@ function App() {
       <Route element={<RequiresAuth />}>
         <Route path='/admin' element={<Admin />} />
         <Route path='/admin/home' element={<AdminHome />} />
+        <Route
+          path='/admin/recommendMissing'
+          element={<AdminRecommendMissing />}
+        />
         <Route path='/admin/leader/:leaderId' element={<AdminLeaderTree />} />
+        <Route path={'/modifyInfo/:id'} element={<ModifyInfo />} />
       </Route>
       <Route path={'/login'} element={<Login />} />
-      <Route path={'/modifyInfo/:id'} element={<ModifyInfo />} />
     </Routes>
   );
 }

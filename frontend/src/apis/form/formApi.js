@@ -6,6 +6,6 @@ export const submitForm = async ({ pageNumber, formData }) => {
 };
 
 export const modifyForm = async ({ formData }) => {
-  const { data } = await api.put('/modifyForm', formData);
+  const { data } = await api.put('/supporterHome/modifyForm', formData);
   return data;
 };

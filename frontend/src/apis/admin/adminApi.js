@@ -16,6 +16,18 @@ export const fetchTreeMapApi = async ({ currentPage }) => {
 };
 
 export const fetchModifyInfoApi = async ({ id }) => {
-  const { data } = await api.get('/fetchModifyInfo?id=' + id);
+  const { data } = await api.get('/supporterHome/fetchModifyInfo?id=' + id);
+  return data;
+};
+
+export const findRecommendApi = async ({ recommend }) => {
+  const { data } = await api.get(
+    '/supporterHome/findRecommend?recommend=' + recommend,
+  );
+  return data;
+};
+
+export const fetchRecommendMissingApi = async () => {
+  const { data } = await api.get('/supporterHome/fetchRecommendMissing');
   return data;
 };
