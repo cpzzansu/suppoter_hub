@@ -49,6 +49,35 @@ const Complete = () => {
           </div>
         </div>
       </div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginBottom: '10vw',
+        }}
+      >
+        <button
+          style={{
+            padding: '1.9vw 10vw',
+            fontSize: '3.33vw',
+            fontWeight: 'bold',
+            color: 'white',
+            border: 'none',
+            backgroundColor: '#0F418E',
+            borderRadius: '5px',
+            cursor: 'pointer',
+          }}
+          onClick={() =>
+            (window.location.href =
+              'https://home.xn----qd6ew2cx70c6uae40epc.com')
+          }
+        >
+          <div>
+            <div>서포터즈 게시판</div>
+            <div>바로가기</div>
+          </div>
+        </button>
+      </div>
     </div>
   );
 };
