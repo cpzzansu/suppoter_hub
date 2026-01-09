@@ -4,11 +4,13 @@ import com.daallcnt.suppoter_hub.form.payload.FormDataDto;
 import com.daallcnt.suppoter_hub.form.payload.SuppoterNode;
 
 import com.daallcnt.suppoter_hub.form.service.FormService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -20,9 +22,9 @@ public class FormController {
     private final FormService formService;
 
     @PostMapping("/form")
-    public void form(@RequestBody FormDataDto formDataDto) {
+    public void form(@RequestBody FormDataDto formDataDto, HttpServletRequest request) throws IOException, InterruptedException {
         log.debug("formDataDto: {}, pageNumber: {}", formDataDto);
-        formService.form(formDataDto);
+        formService.form(formDataDto, request);
     }
 
     @GetMapping("/fetchTreeMap")
@@ -47,5 +49,11 @@ public class FormController {
     public ResponseEntity<List<SuppoterNode>> fetchSheetSupporter() {
         log.debug("fetchSheetSupporter");
         return formService.fetchSheetSupporter();
+    }
+
+    @GetMapping("/fetchSheetForLeader")
+    public ResponseEntity<List<SuppoterNode>> fetchSheetForLeader(@RequestParam Long leaderId) {
+        log.debug("fetchSheetForLeader  leaderId: {}", leaderId);
+        return formService.fetchSheetForLeader(leaderId);
     }
 }

@@ -42,12 +42,12 @@ public class SupporterHomeServiceImpl implements SupporterHomeService {
 
         if (suppoterList.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 
-        Suppoter suppoter = suppoterList.getFirst();
+        Suppoter suppoter = loggedInSupporter(suppoterList, loginDto);
 
-        if (!suppoter.getPhone().equals(loginDto.getPhone()))
+        if (suppoter == null)
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
 
-        Member member = memberRepository.findByMemberId(loginDto.getName()).orElse(null);
+        Member member = memberRepository.findByPhone(loginDto.getPhone()).orElse(null);
 
         if (member == null) {
             member = Member.builder()
@@ -72,6 +72,18 @@ public class SupporterHomeServiceImpl implements SupporterHomeService {
         return ResponseEntity.ok(loginResponseDto);
     }
 
+    private Suppoter loggedInSupporter(List<Suppoter> suppoterList, SupporterHomeLoginDto loginDto) {
+
+        Suppoter suppoter = suppoterList.stream().filter(sup ->
+                        sup.getPhone()
+                                .equals(loginDto.getPhone())
+                )
+                .findFirst()
+                .orElse(null);
+
+        return suppoter;
+    }
+
     @Override
     public ResponseEntity<SuppoterNode> getModifyInfo(long id) {
         Suppoter suppoter = suppoterRepository.findById(id).orElse(null);
@@ -91,8 +103,12 @@ public class SupporterHomeServiceImpl implements SupporterHomeService {
 
     @Override
     public void modifyForm(FormDataDto formDataDto) {
-        Suppoter recommender = suppoterRepository.findById(formDataDto.getSelectedRecommendId()).orElse(null);
-        if (recommender == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        Suppoter recommender = null;
+
+        if (!formDataDto.getRecommend().equals("대표")) {
+            recommender = suppoterRepository.findById(formDataDto.getSelectedRecommendId()).orElse(null);
+            if (recommender == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
 
         Suppoter suppoter = suppoterRepository.findById(formDataDto.getId()).orElse(null);
         if (suppoter == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);

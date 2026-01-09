@@ -14,7 +14,7 @@ const Complete = () => {
       >
         <img
           style={{ width: '100%' }}
-          src='/assets/images/complete_logo.png'
+          src='/assets/images/complete_logo.jpg'
           alt='로고'
         />
       </div>

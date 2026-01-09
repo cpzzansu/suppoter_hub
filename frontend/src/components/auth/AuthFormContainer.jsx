@@ -11,7 +11,7 @@ const AuthFormContainer = ({ children }) => {
             alignItems: 'center',
           }}
         >
-          <div className={styles.loginTitle}>전주 완주 통합</div>
+          <div className={styles.loginTitle}>함께해요 관영 관리자</div>
         </div>
         {children}
       </div>

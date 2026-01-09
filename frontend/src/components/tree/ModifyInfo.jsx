@@ -62,9 +62,7 @@ const ModifyInfo = () => {
       const next = (input.value ?? '').trim();
       const prev = (data.recommend ?? '').trim();
 
-      if (next === prev) return;
-
-      updateRecommendMutation.mutate({ recommend: next });
+      if (next !== '대표') updateRecommendMutation.mutate({ recommend: next });
     },
     [updateRecommendMutation],
   );
@@ -200,10 +198,10 @@ const ModifyInfo = () => {
                 selectedNode: data,
               });
 
-              if (valueEqual) {
-                alert('값이 변하지 않았습니다.');
-                return;
-              }
+              // if (valueEqual) {
+              //   alert('값이 변하지 않았습니다.');
+              //   return;
+              // }
 
               if (!selectedRecommend) {
                 alert('올바른 추천인을 선택해주세요.');

@@ -46,4 +46,12 @@ public class Suppoter {
         this.recommend = formDataDto.getRecommend();
         this.recommender = recommender;
     }
+
+    public void setRecommender(Suppoter recommender) {
+        this.recommender = recommender;
+    }
+
+    public void setRecommend(String recommend) {
+        this.recommend = recommend;
+    }
 }

@@ -6,6 +6,7 @@ import { validateForm } from '../utils/validate.js';
 
 const MainForm = () => {
   // const { pageNumber } = useParams();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
 
@@ -22,6 +23,8 @@ const MainForm = () => {
   });
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+
     const isValid = validateForm(formData, isPrivacyAgree);
     if (!isValid) return;
 
@@ -34,17 +37,21 @@ const MainForm = () => {
     //   body: JSON.stringify(formData),
     // });
 
-    await submitForm({ formData })
-      .then(() => {
-        navigate('/complete');
-      })
-      .catch((error) => {
-        if (error.status === 409) {
-          alert('이미 가입된 전화번호입니다.');
-        } else {
-          alert('제출에 실패했습니다.');
-        }
-      });
+    try {
+      setIsSubmitting(true);
+      await submitForm({ formData });
+      navigate('/complete');
+    } catch (error) {
+      const status = error?.response?.status ?? error?.status;
+      console.log(error.response?.data);
+      if (status === 409) {
+        alert(error?.response?.data);
+      } else {
+        alert('제출에 실패했습니다.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -57,7 +64,7 @@ const MainForm = () => {
       <div>
         <img
           style={{ width: '100%' }}
-          src='/assets/images/form_logo.png'
+          src='/assets/images/form_logo.jpg'
           alt='로고'
         />
         {/*<img style={{width: '100%'}} src="/assets/images/Logo2.png" alt="로고"/>*/}
@@ -99,11 +106,12 @@ const MainForm = () => {
           <div>
             <FormLabel labelName={'이름'} />
             <FormInput
-              type={'text'}
+              type='text'
               value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={(e) => {
+                const v = e.target.value.replace(/\s+/g, '');
+                setFormData({ ...formData, name: v });
+              }}
             />
             <FormLabel labelName={'연락처'} />
             <FormInput
@@ -194,11 +202,12 @@ const MainForm = () => {
             />
             <FormLabel labelName={'추천인 성함을 입력해 주세요.'} />
             <FormInput
-              type={'text'}
+              type='text'
               value={formData.recommend}
-              onChange={(e) =>
-                setFormData({ ...formData, recommend: e.target.value })
-              }
+              onChange={(e) => {
+                const v = e.target.value.replace(/\s+/g, '');
+                setFormData({ ...formData, recommend: v });
+              }}
             />
             <div
               style={{

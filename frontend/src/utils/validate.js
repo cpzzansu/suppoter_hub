@@ -9,6 +9,9 @@ export const validateForm = (formData, isPrivacyAgree) => {
   if (formData.name.length === 0) {
     alert('이름을 입력해주세요.');
     return false;
+  } else if (formData.name === '대표') {
+    alert('이름에 대표를 입력할 수 없습니다.');
+    return false;
   }
   if (
     formData.phone.length === 0 ||

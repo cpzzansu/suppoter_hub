@@ -21,4 +21,6 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
     boolean existsByPhone(String phone);
 
     List<Suppoter> findByRecommenderIsNullAndRecommendNot(String recommend);
+
+    List<Suppoter> findByRecommenderIsNullAndRecommendIsNotNull();
 }
