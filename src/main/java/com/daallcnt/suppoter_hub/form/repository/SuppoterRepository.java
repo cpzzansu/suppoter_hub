@@ -28,14 +28,33 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
 
     @Query(value = """
     WITH RECURSIVE
-    cnt AS (
-      SELECT recommender_id AS id, COUNT(*) AS recommended_count
-      FROM suppoter
-      WHERE recommender_id IS NOT NULL
-      GROUP BY recommender_id
-      HAVING COUNT(*) >= ?
+    down_tree AS (
+      SELECT
+        p.id  AS ancestor_id,
+        c.id  AS descendant_id,
+        CAST(CONCAT(p.id, ',', c.id) AS CHAR(2000)) AS path,
+        1 AS depth
+      FROM suppoter p
+      JOIN suppoter c ON c.recommender_id = p.id
+    
+      UNION ALL
+    
+      SELECT
+        dt.ancestor_id,
+        c.id AS descendant_id,
+        CONCAT(dt.path, ',', c.id) AS path,
+        dt.depth + 1 AS depth
+      FROM down_tree dt
+      JOIN suppoter c ON c.recommender_id = dt.descendant_id
+      WHERE dt.depth < 1000
+        AND FIND_IN_SET(c.id, dt.path) = 0   -- 사이클 방지
     ),
-    anc AS (
+    tot AS (
+      SELECT ancestor_id AS id, COUNT(*) AS total_count
+      FROM down_tree
+      GROUP BY ancestor_id
+    ),
+    up_tree AS (
       SELECT
         s.id AS start_id,
         s.id AS current_id,
@@ -43,36 +62,39 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
         CAST(s.id AS CHAR(2000)) AS path,
         0 AS depth
       FROM suppoter s
-      JOIN cnt ON cnt.id = s.id
+      JOIN tot ON tot.id = s.id
     
       UNION ALL
     
       SELECT
-        anc.start_id,
+        ut.start_id,
         p.id AS current_id,
         p.recommender_id AS parent_id,
-        CONCAT(anc.path, ',', p.id) AS path,
-        anc.depth + 1 AS depth
-      FROM anc
-      JOIN suppoter p ON p.id = anc.parent_id
-      WHERE anc.depth < 1000
-        AND FIND_IN_SET(p.id, anc.path) = 0
+        CONCAT(ut.path, ',', p.id) AS path,
+        ut.depth + 1 AS depth
+      FROM up_tree ut
+      JOIN suppoter p ON p.id = ut.parent_id
+      WHERE ut.depth < 1000
+        AND FIND_IN_SET(p.id, ut.path) = 0  
     ),
+    
     roots AS (
       SELECT start_id, current_id AS root_id
-      FROM anc
+      FROM up_tree
       WHERE parent_id IS NULL
     )
+    
     SELECT
-      CAST(ROW_NUMBER() OVER (ORDER BY cnt.recommended_count DESC) AS SIGNED) AS ranking,
+      CAST(ROW_NUMBER() OVER (ORDER BY tot.total_count DESC) AS SIGNED) AS ranking,
       s.name AS name,
       COALESCE(root.name, s.name) AS rootName,
-      cnt.recommended_count AS recommendedCount
-    FROM cnt
-    JOIN suppoter s ON s.id = cnt.id
+      tot.total_count AS recommendedCount
+    FROM tot
+    JOIN suppoter s ON s.id = tot.id
     LEFT JOIN roots r ON r.start_id = s.id
     LEFT JOIN suppoter root ON root.id = r.root_id
-    ORDER BY cnt.recommended_count DESC;
+    WHERE tot.total_count >= ?       
+    ORDER BY tot.total_count DESC;
     """, nativeQuery = true)
     List<RecommendRankView> findRecommendersRankWithRoot(@Param("min") long min);
 }
