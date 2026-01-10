@@ -35,6 +35,7 @@ public class SecurityConfig {
             "/actuator/health/login",
             "/api/fetchSheetSupporter",
             "/api/fetchSheetForLeader",
+            "/api/fetchRanking",
     };
 
     /**

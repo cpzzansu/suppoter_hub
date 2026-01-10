@@ -10,6 +10,7 @@ import AdminHome from './pages/admin/AdminHome.jsx';
 import RequiresAuth from './components/common/RequiredAuth.jsx';
 import AdminLeaderTree from './pages/admin/AdminLeaderTree.jsx';
 import AdminRecommendMissing from './pages/admin/AdminRecommendMissing.jsx';
+import Ranking from './pages/admin/Ranking.jsx';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         />
         <Route path='/admin/leader/:leaderId' element={<AdminLeaderTree />} />
         <Route path={'/modifyInfo/:id'} element={<ModifyInfo />} />
+        <Route path={'/ranking'} element={<Ranking />} />
       </Route>
       <Route path={'/login'} element={<Login />} />
     </Routes>

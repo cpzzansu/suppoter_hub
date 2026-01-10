@@ -27,6 +27,12 @@ const AdminHome = () => {
         >
           미적용 데이터
         </button>
+        <button
+          style={{ padding: '1vw', marginLeft: '2vw', cursor: 'pointer' }}
+          onClick={() => navigate('/ranking')}
+        >
+          서포터즈 랭킹
+        </button>
       </div>
 
       <div

@@ -1,6 +1,7 @@
 package com.daallcnt.suppoter_hub.form.service;
 
 import com.daallcnt.suppoter_hub.form.payload.FormDataDto;
+import com.daallcnt.suppoter_hub.form.payload.RecommendRankView;
 import com.daallcnt.suppoter_hub.form.payload.SuppoterNode;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
@@ -20,4 +21,6 @@ public interface FormService {
     ResponseEntity<SuppoterNode> fetchLeaderNode(Long leaderId);
 
     ResponseEntity<List<SuppoterNode>> fetchSheetForLeader(Long leaderId);
+
+    ResponseEntity<List<RecommendRankView>> fetchRanking();
 }

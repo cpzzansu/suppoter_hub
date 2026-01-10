@@ -4,6 +4,7 @@ import com.daallcnt.suppoter_hub.common.exception.DuplicationSupporterException;
 import com.daallcnt.suppoter_hub.form.entity.SupporterSignupLog;
 import com.daallcnt.suppoter_hub.form.entity.Suppoter;
 import com.daallcnt.suppoter_hub.form.payload.FormDataDto;
+import com.daallcnt.suppoter_hub.form.payload.RecommendRankView;
 import com.daallcnt.suppoter_hub.form.payload.SuppoterNode;
 import com.daallcnt.suppoter_hub.form.repository.SupporterSignupLogRepository;
 import com.daallcnt.suppoter_hub.form.repository.SuppoterRepository;
@@ -142,6 +143,11 @@ public class FormServiceImpl implements FormService {
                 .toList();
 
         return ResponseEntity.ok(rootNodes);
+    }
+
+    @Override
+    public ResponseEntity<List<RecommendRankView>> fetchRanking() {
+        return ResponseEntity.ok(suppoterRepository.findRecommendersRankWithRoot(100));
     }
 
     private Suppoter resolveRecommender(String recommendName) {

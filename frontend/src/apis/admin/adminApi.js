@@ -31,3 +31,8 @@ export const fetchRecommendMissingApi = async () => {
   const { data } = await api.get('/supporterHome/fetchRecommendMissing');
   return data;
 };
+
+export const fetchRanking = async () => {
+  const { data } = await api.get('/fetchRanking');
+  return data;
+};

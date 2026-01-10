@@ -1,6 +1,7 @@
 package com.daallcnt.suppoter_hub.form.controller;
 
 import com.daallcnt.suppoter_hub.form.payload.FormDataDto;
+import com.daallcnt.suppoter_hub.form.payload.RecommendRankView;
 import com.daallcnt.suppoter_hub.form.payload.SuppoterNode;
 
 import com.daallcnt.suppoter_hub.form.service.FormService;
@@ -55,5 +56,11 @@ public class FormController {
     public ResponseEntity<List<SuppoterNode>> fetchSheetForLeader(@RequestParam Long leaderId) {
         log.debug("fetchSheetForLeader  leaderId: {}", leaderId);
         return formService.fetchSheetForLeader(leaderId);
+    }
+
+    @GetMapping("/fetchRanking")
+    public ResponseEntity<List<RecommendRankView>> fetchRanking() {
+        log.debug("fetchRanking");
+        return formService.fetchRanking();
     }
 }
