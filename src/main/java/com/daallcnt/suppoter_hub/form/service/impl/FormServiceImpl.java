@@ -147,7 +147,7 @@ public class FormServiceImpl implements FormService {
 
     @Override
     public ResponseEntity<List<RecommendRankView>> fetchRanking() {
-        return ResponseEntity.ok(suppoterRepository.findRecommendersRankWithRoot(100));
+        return ResponseEntity.ok(suppoterRepository.findRecommendersRankWithRoot(10));
     }
 
     private Suppoter resolveRecommender(String recommendName) {
