@@ -109,7 +109,7 @@ const Region = () => {
                 fontWeight: 800,
               }}
           >
-            엑셀 다운로드(현재페이지)
+            엑셀 다운로드
           </button>
         </div>
 
