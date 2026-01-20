@@ -2,6 +2,8 @@ package com.daallcnt.suppoter_hub.form.service;
 
 import com.daallcnt.suppoter_hub.form.payload.*;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
@@ -22,7 +24,9 @@ public interface FormService {
 
     ResponseEntity<List<RecommendRankView>> fetchRanking();
 
-    ResponseEntity<List<RegionView>> fetchRegion(String region);
+    ResponseEntity<Page<RegionRowDto>> fetchRegion(String region, String keyword, Pageable pageable);
 
-    ResponseEntity<List<RegionView>> fetchRightMember();
+    ResponseEntity<List<RegionRowView>> fetchRightMember();
+
+    ResponseEntity<List<RegionRowView>> fetchRegionExcel(String region, String keyword);
 }

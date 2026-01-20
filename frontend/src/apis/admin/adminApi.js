@@ -37,8 +37,8 @@ export const fetchRanking = async () => {
   return data;
 };
 
-export const fetchRegion = async ({region}) => {
-  const { data } = await api.get('/fetchRegion?region=' + region);
+export const fetchRegion = async ({region, keyword, page, size}) => {
+  const { data } = await api.get('/fetchRegion', {params: {region, keyword, page, size}});
   return data;
 };
 
@@ -46,3 +46,7 @@ export const fetchRightMember = async () => {
   const { data } = await api.get('/fetchRightMember');
   return data;
 };
+
+export const fetchRegionExcel = async ({region, keyword}) => {
+  return await api.get('/fetchRegionExcel', {params: {region, keyword}});
+}

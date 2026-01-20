@@ -13,17 +13,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import java.util.*;
 
 
 @Service
@@ -151,14 +153,75 @@ public class FormServiceImpl implements FormService {
         return ResponseEntity.ok(suppoterRepository.findRecommendersRankWithRoot(10));
     }
 
-    @Override
-    public ResponseEntity<List<RegionView>> fetchRegion(String region) {
-        return ResponseEntity.ok(suppoterRepository.findByRegion(region));
+    public ResponseEntity<Page<RegionRowDto>> fetchRegion(String region, String keyword, Pageable pageable) {
+        String rg = (region == null || region.trim().isEmpty()) ? "전체" : region.trim();
+        String kw = (keyword == null || keyword.trim().isEmpty()) ? null : keyword.trim();
+
+        Page<RegionRowView> page = suppoterRepository.findByRegion(rg, kw, pageable);
+        List<RegionRowView> content = page.getContent();
+
+        // 이번 페이지에서 시작할 추천자 ids
+        Set<Long> need = new HashSet<>();
+        for (RegionRowView row : content) {
+            if (row.getRecommenderId() != null) need.add(row.getRecommenderId());
+        }
+
+        // 조상 노드 전부 모으기
+        Map<Long, SuppoterNodeView> nodeMap = new HashMap<>();
+        int guard = 0;
+
+        while (!need.isEmpty() && guard++ < 30) { // 깊이 제한(원하면 조정)
+            List<Long> batch = need.stream().filter(id -> !nodeMap.containsKey(id)).toList();
+            if (batch.isEmpty()) break;
+
+            List<SuppoterNodeView> nodes = suppoterRepository.findNodesByIds(batch);
+
+            need.clear();
+            for (SuppoterNodeView n : nodes) {
+                nodeMap.put(n.getId(), n);
+            }
+            for (SuppoterNodeView n : nodes) {
+                Long parentId = n.getRecommenderId();
+                if (parentId != null && !nodeMap.containsKey(parentId)) need.add(parentId);
+            }
+        }
+
+        // 각 row별 path 생성
+        List<RegionRowDto> dtos = new ArrayList<>(content.size());
+
+        for (RegionRowView row : content) {
+            List<String> path = new ArrayList<>();
+            Long cur = row.getRecommenderId();
+            Set<Long> seen = new HashSet<>(); // 순환 방지
+
+            while (cur != null && seen.add(cur)) {
+                SuppoterNodeView node = nodeMap.get(cur);
+                if (node == null) break;
+
+                path.add(node.getName());          // ✅ 바로 위부터 순서대로
+                cur = node.getRecommenderId();
+            }
+
+            dtos.add(new RegionRowDto(
+                    row.getId(),
+                    row.getName(),
+                    row.getPhone(),
+                    row.getAddress(),
+                    path
+            ));
+        }
+
+        return ResponseEntity.ok(new PageImpl<>(dtos, pageable, page.getTotalElements()));
     }
 
     @Override
-    public ResponseEntity<List<RegionView>> fetchRightMember() {
+    public ResponseEntity<List<RegionRowView>> fetchRightMember() {
         return ResponseEntity.ok(suppoterRepository.findRightsMembers());
+    }
+
+    @Override
+    public ResponseEntity<List<RegionRowView>> fetchRegionExcel(String region, String keyword) {
+        return ResponseEntity.ok(suppoterRepository.findExcelBaseByRegionAndKeyword(region,keyword));
     }
 
     private Suppoter resolveRecommender(String recommendName) {

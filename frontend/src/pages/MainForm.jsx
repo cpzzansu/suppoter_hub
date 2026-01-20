@@ -19,7 +19,7 @@ const MainForm = () => {
     address: '',
     recommend: '',
     recommendPhone: '',
-    isRightsMember: false,
+    isRightsMember: true,
   });
 
   const handleSubmit = async () => {

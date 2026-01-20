@@ -2,7 +2,10 @@ package com.daallcnt.suppoter_hub.form.repository;
 
 import com.daallcnt.suppoter_hub.form.entity.Suppoter;
 import com.daallcnt.suppoter_hub.form.payload.RecommendRankView;
-import com.daallcnt.suppoter_hub.form.payload.RegionView;
+import com.daallcnt.suppoter_hub.form.payload.RegionRowView;
+import com.daallcnt.suppoter_hub.form.payload.SuppoterNodeView;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -103,16 +106,20 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
     long countByRecommenderIsNotNull();
 
     @Query("""
-        select
-            s.name as name,
-            r.name as recommenderName,
-            s.phone as phone,
-            s.address as address
-        from Suppoter s
-        left join s.recommender r
-        where (:region = '전체' or s.address like concat('%', :region, '%'))
-        """)
-    List<RegionView> findByRegion(@Param("region") String region);
+  select
+    s.id as id,
+    s.name as name,
+    s.phone as phone,
+    s.address as address,
+    r.id as recommenderId
+  from Suppoter s
+  left join s.recommender r
+  where (:region = '전체' or coalesce(s.address,'') like concat('%', :region, '%'))
+    and (:keyword is null or trim(:keyword) = ''
+         or s.name like concat('%', trim(:keyword), '%')
+         or s.phone like concat('%', trim(:keyword), '%'))
+""")
+    Page<RegionRowView>  findByRegion(@Param("region") String region, @Param("keyword") String keyword, Pageable pageable);
 
     @Query("""
         select
@@ -124,5 +131,35 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
         left join s.recommender r
         where s.isRightsMember is true
     """)
-    List<RegionView> findRightsMembers();
+    List<RegionRowView> findRightsMembers();
+
+    @Query("""
+              select
+                s.id as id,
+                s.recommender.id as recommenderId,
+                s.name as name
+              from Suppoter s
+              where s.id in :ids
+            """)
+    List<SuppoterNodeView> findNodesByIds(@Param("ids") List<Long> ids);
+
+    @Query("""
+              select
+                s.id as id,
+                s.name as name,
+                s.address as address,
+                s.phone as phone,
+                r.name as recommenderName
+              from Suppoter s
+              left join s.recommender r
+              where (:region = '전체' or coalesce(s.address,'') like concat('%', :region, '%'))
+                and (:keyword is null or trim(:keyword) = ''
+                     or s.name like concat('%', trim(:keyword), '%')
+                     or s.phone like concat('%', trim(:keyword), '%'))
+              order by s.id desc
+            """)
+    List<RegionRowView> findExcelBaseByRegionAndKeyword(
+            @Param("region") String region,
+            @Param("keyword") String keyword
+    );
 }
