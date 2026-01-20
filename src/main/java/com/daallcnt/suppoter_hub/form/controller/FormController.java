@@ -1,8 +1,6 @@
 package com.daallcnt.suppoter_hub.form.controller;
 
-import com.daallcnt.suppoter_hub.form.payload.FormDataDto;
-import com.daallcnt.suppoter_hub.form.payload.RecommendRankView;
-import com.daallcnt.suppoter_hub.form.payload.SuppoterNode;
+import com.daallcnt.suppoter_hub.form.payload.*;
 
 import com.daallcnt.suppoter_hub.form.service.FormService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +27,7 @@ public class FormController {
     }
 
     @GetMapping("/fetchTreeMap")
-    public ResponseEntity<List<SuppoterNode>> fetchTreeMap(@RequestParam(name = "currentPage") int currentPage) {
+    public ResponseEntity<AdminHomeDto> fetchTreeMap(@RequestParam(name = "currentPage") int currentPage) {
         log.debug("fetchTreeMap currentPage: {}", currentPage);
         return formService.fetchTreeMap(currentPage);
     }
@@ -62,5 +60,17 @@ public class FormController {
     public ResponseEntity<List<RecommendRankView>> fetchRanking() {
         log.debug("fetchRanking");
         return formService.fetchRanking();
+    }
+
+    @GetMapping("/fetchRegion")
+    public ResponseEntity<List<RegionView>> fetchRegion(@RequestParam(name = "region")String region) {
+        log.debug("fetchRegion region: {}", region);
+        return formService.fetchRegion(region);
+    }
+
+    @GetMapping("/fetchRightMember")
+    public ResponseEntity<List<RegionView>> fetchRightMember() {
+        log.debug("fetchRightMember");
+        return formService.fetchRightMember();
     }
 }

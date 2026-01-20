@@ -11,6 +11,8 @@ import RequiresAuth from './components/common/RequiredAuth.jsx';
 import AdminLeaderTree from './pages/admin/AdminLeaderTree.jsx';
 import AdminRecommendMissing from './pages/admin/AdminRecommendMissing.jsx';
 import Ranking from './pages/admin/Ranking.jsx';
+import Region from "./pages/admin/Region.jsx";
+import RightMember from "./pages/admin/RightMember.jsx";
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
         <Route path='/admin/leader/:leaderId' element={<AdminLeaderTree />} />
         <Route path={'/modifyInfo/:id'} element={<ModifyInfo />} />
         <Route path={'/ranking'} element={<Ranking />} />
+        <Route path={'/region'} element={<Region />} />
+        <Route path={'/rightMember'} element={<RightMember />} />
       </Route>
       <Route path={'/login'} element={<Login />} />
     </Routes>

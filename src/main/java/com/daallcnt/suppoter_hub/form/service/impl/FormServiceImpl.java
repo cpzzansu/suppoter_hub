@@ -3,9 +3,7 @@ package com.daallcnt.suppoter_hub.form.service.impl;
 import com.daallcnt.suppoter_hub.common.exception.DuplicationSupporterException;
 import com.daallcnt.suppoter_hub.form.entity.SupporterSignupLog;
 import com.daallcnt.suppoter_hub.form.entity.Suppoter;
-import com.daallcnt.suppoter_hub.form.payload.FormDataDto;
-import com.daallcnt.suppoter_hub.form.payload.RecommendRankView;
-import com.daallcnt.suppoter_hub.form.payload.SuppoterNode;
+import com.daallcnt.suppoter_hub.form.payload.*;
 import com.daallcnt.suppoter_hub.form.repository.SupporterSignupLogRepository;
 import com.daallcnt.suppoter_hub.form.repository.SuppoterRepository;
 import com.daallcnt.suppoter_hub.form.service.AligoMMSSender;
@@ -87,7 +85,7 @@ public class FormServiceImpl implements FormService {
     }
 
     @Override
-    public ResponseEntity<List<SuppoterNode>> fetchTreeMap(int currentPage) {
+    public ResponseEntity<AdminHomeDto> fetchTreeMap(int currentPage) {
         List<Suppoter> rootSupporterList = suppoterRepository.findByRecommendContaining("대표");
 
         for (Suppoter suppoter : rootSupporterList) {
@@ -102,7 +100,10 @@ public class FormServiceImpl implements FormService {
                 .map(SuppoterNode::new)
                 .toList();
 
-        return ResponseEntity.ok(rootNodes);
+        return ResponseEntity.ok(AdminHomeDto.builder()
+                        .rootNodes(rootNodes)
+                        .totalSupportersNumber(suppoterRepository.countByRecommenderIsNotNull())
+                        .build());
     }
 
     @Override
@@ -148,6 +149,16 @@ public class FormServiceImpl implements FormService {
     @Override
     public ResponseEntity<List<RecommendRankView>> fetchRanking() {
         return ResponseEntity.ok(suppoterRepository.findRecommendersRankWithRoot(10));
+    }
+
+    @Override
+    public ResponseEntity<List<RegionView>> fetchRegion(String region) {
+        return ResponseEntity.ok(suppoterRepository.findByRegion(region));
+    }
+
+    @Override
+    public ResponseEntity<List<RegionView>> fetchRightMember() {
+        return ResponseEntity.ok(suppoterRepository.findRightsMembers());
     }
 
     private Suppoter resolveRecommender(String recommendName) {

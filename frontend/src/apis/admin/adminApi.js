@@ -36,3 +36,13 @@ export const fetchRanking = async () => {
   const { data } = await api.get('/fetchRanking');
   return data;
 };
+
+export const fetchRegion = async ({region}) => {
+  const { data } = await api.get('/fetchRegion?region=' + region);
+  return data;
+};
+
+export const fetchRightMember = async () => {
+  const { data } = await api.get('/fetchRightMember');
+  return data;
+};

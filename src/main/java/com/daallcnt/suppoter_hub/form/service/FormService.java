@@ -1,8 +1,6 @@
 package com.daallcnt.suppoter_hub.form.service;
 
-import com.daallcnt.suppoter_hub.form.payload.FormDataDto;
-import com.daallcnt.suppoter_hub.form.payload.RecommendRankView;
-import com.daallcnt.suppoter_hub.form.payload.SuppoterNode;
+import com.daallcnt.suppoter_hub.form.payload.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 
@@ -12,7 +10,7 @@ import java.util.List;
 public interface FormService {
     void form(FormDataDto formDataDto, HttpServletRequest request) throws IOException, InterruptedException;
 
-    ResponseEntity<List<SuppoterNode>> fetchTreeMap(int currentPage);
+    ResponseEntity<AdminHomeDto> fetchTreeMap(int currentPage);
 
     ResponseEntity<List<Integer>> fetchPageNumberList();
 
@@ -23,4 +21,8 @@ public interface FormService {
     ResponseEntity<List<SuppoterNode>> fetchSheetForLeader(Long leaderId);
 
     ResponseEntity<List<RecommendRankView>> fetchRanking();
+
+    ResponseEntity<List<RegionView>> fetchRegion(String region);
+
+    ResponseEntity<List<RegionView>> fetchRightMember();
 }

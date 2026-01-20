@@ -2,6 +2,7 @@ package com.daallcnt.suppoter_hub.form.repository;
 
 import com.daallcnt.suppoter_hub.form.entity.Suppoter;
 import com.daallcnt.suppoter_hub.form.payload.RecommendRankView;
+import com.daallcnt.suppoter_hub.form.payload.RegionView;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -88,7 +89,8 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
       CAST(ROW_NUMBER() OVER (ORDER BY tot.total_count DESC) AS SIGNED) AS ranking,
       s.name AS name,
       COALESCE(root.name, s.name) AS rootName,
-      tot.total_count AS recommendedCount
+      tot.total_count AS recommendedCount,
+      s.phone AS phone
     FROM tot
     JOIN suppoter s ON s.id = tot.id
     LEFT JOIN roots r ON r.start_id = s.id
@@ -97,4 +99,30 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
     ORDER BY tot.total_count DESC;
     """, nativeQuery = true)
     List<RecommendRankView> findRecommendersRankWithRoot(@Param("min") long min);
+
+    long countByRecommenderIsNotNull();
+
+    @Query("""
+        select
+            s.name as name,
+            r.name as recommenderName,
+            s.phone as phone,
+            s.address as address
+        from Suppoter s
+        left join s.recommender r
+        where (:region = '전체' or s.address like concat('%', :region, '%'))
+        """)
+    List<RegionView> findByRegion(@Param("region") String region);
+
+    @Query("""
+        select
+            s.name as name,
+            r.name as recommenderName,
+            s.phone as phone,
+            s.address as address
+        from Suppoter s
+        left join s.recommender r
+        where s.isRightsMember is true
+    """)
+    List<RegionView> findRightsMembers();
 }
