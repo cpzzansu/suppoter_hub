@@ -1,5 +1,7 @@
 package com.daallcnt.suppoter_hub.form.controller;
 
+import com.daallcnt.suppoter_hub.common.exception.APIException;
+import com.daallcnt.suppoter_hub.common.security.SheetLinkTokenProvider;
 import com.daallcnt.suppoter_hub.form.payload.*;
 
 import com.daallcnt.suppoter_hub.form.service.FormService;
@@ -10,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +26,7 @@ import java.util.List;
 public class FormController {
 
     private final FormService formService;
+    private final SheetLinkTokenProvider sheetLinkTokenProvider;
 
     @PostMapping("/form")
     public void form(@RequestBody FormDataDto formDataDto, HttpServletRequest request) throws IOException, InterruptedException {
@@ -60,10 +64,44 @@ public class FormController {
         return formService.fetchSheetForLeader(leaderId);
     }
 
+    /**
+     * 대표트리 공유 링크용 토큰 발급 (관리자 화면에서 호출).
+     * 응답: 서명된 토큰 문자열
+     */
+    @GetMapping("/sheetLinkToken")
+    public ResponseEntity<String> sheetLinkToken(@RequestParam Long leaderId) {
+        log.debug("sheetLinkToken leaderId: {}", leaderId);
+        return ResponseEntity.ok(sheetLinkTokenProvider.generateToken(leaderId));
+    }
+
+    /**
+     * 대표트리 공유 링크용 조회 (공개 URL에서 사용).
+     * query param t(토큰)를 검증한 뒤 해당 leaderId 트리를 반환한다.
+     */
+    @GetMapping("/fetchSheetForLeaderByToken")
+    public ResponseEntity<List<SuppoterNode>> fetchSheetForLeaderByToken(@RequestParam(name = "t") String token) {
+        Long leaderId = sheetLinkTokenProvider.validateAndGetLeaderId(token);
+        if (leaderId == null) {
+            throw new APIException(HttpStatus.BAD_REQUEST, "invalid token");
+        }
+        log.debug("fetchSheetForLeaderByToken leaderId: {}", leaderId);
+        return formService.fetchSheetForLeader(leaderId);
+    }
+
     @GetMapping("/fetchRanking")
-    public ResponseEntity<List<RecommendRankView>> fetchRanking() {
-        log.debug("fetchRanking");
-        return formService.fetchRanking();
+    public ResponseEntity<List<RecommendRankDto>> fetchRanking(
+            @RequestParam(name = "includePath", defaultValue = "false") boolean includePath
+    ) {
+        log.debug("fetchRanking includePath={}", includePath);
+        return formService.fetchRanking(includePath);
+    }
+
+    @GetMapping("/fetchDirectChildrenRanking")
+    public ResponseEntity<List<RecommendRankDto>> fetchDirectChildrenRanking(
+            @RequestParam(name = "includePath", defaultValue = "false") boolean includePath
+    ) {
+        log.debug("fetchDirectChildrenRanking includePath={}", includePath);
+        return formService.fetchDirectChildrenRanking(includePath);
     }
 
     @GetMapping("/fetchRegion")
@@ -89,5 +127,16 @@ public class FormController {
 
         log.debug("fetchRegionExcel region: {}, keyword: {}", region, keyword);
         return formService.fetchRegionExcel(region, keyword);
+    }
+
+    /**
+     * 연락처 가져오기: 전화번호 목록을 보내 매칭된 Supporter만 반환.
+     * 010-0000-0000 형식으로 정규화 후 매칭.
+     */
+    @PostMapping("/matchSupporterByPhones")
+    public ResponseEntity<List<MatchedSupporterView>> matchSupporterByPhones(
+            @RequestBody MatchSupporterByPhonesRequest request) {
+        log.debug("matchSupporterByPhones count: {}", request != null && request.phoneNumbers() != null ? request.phoneNumbers().size() : 0);
+        return formService.matchSupporterByPhones(request != null ? request.phoneNumbers() : List.of());
     }
 }

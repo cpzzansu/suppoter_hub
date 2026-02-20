@@ -139,6 +139,21 @@ const ModifyInfo = () => {
             disabled={updateRecommendMutation.isPending}
           />
         </ModalValueContainer>
+        <ModalValueContainer>
+          <ModalLabel>권리 회원</ModalLabel>
+          <input
+            type="checkbox"
+            defaultChecked={data.isRightsMember}
+            ref={(el) => {
+              formRefs.current['isRightsMember'] = el;
+            }}
+            style={{
+              width: '20px',
+              height: '20px',
+              marginLeft: '10px',
+            }}
+          />
+        </ModalValueContainer>
         {recommendList.length > 0 &&
           recommendList.map((recommend) => (
             <button
@@ -183,15 +198,19 @@ const ModifyInfo = () => {
               color: 'black',
             }}
             onClick={() => {
-              console.log(selectedRecommend.id);
               const formData = {
                 id: data.id,
                 name: formRefs.current['name'].value,
                 phone: formRefs.current['phone'].value,
                 address: formRefs.current['address'].value,
                 recommend: formRefs.current['recommend'].value,
-                selectedRecommendId: selectedRecommend.id,
+                isRightsMember: formRefs.current['isRightsMember'].checked,
               };
+
+              // 추천인을 변경한 경우에만 selectedRecommendId 추가
+              if (selectedRecommend && selectedRecommend.id) {
+                formData.selectedRecommendId = selectedRecommend.id;
+              }
 
               const valueEqual = checkModifyValue({
                 formData,
@@ -203,7 +222,8 @@ const ModifyInfo = () => {
               //   return;
               // }
 
-              if (!selectedRecommend) {
+              // 추천인을 변경할 때는 selectedRecommend가 있어야 함
+              if (formData.selectedRecommendId && !selectedRecommend) {
                 alert('올바른 추천인을 선택해주세요.');
                 return;
               }

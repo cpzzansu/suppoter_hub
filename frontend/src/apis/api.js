@@ -9,9 +9,13 @@ const instance = axios.create({
 
 instance.interceptors.request.use(
   async (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch {
+      // localStorage 접근 불가(시크릿/임베드 등) 시 무시
     }
     return config;
   },
@@ -31,7 +35,9 @@ instance.interceptors.response.use(
         typeof data.message === 'string' &&
         data.message.includes('JWT expired')
       ) {
-        localStorage.removeItem('token');
+        try {
+          localStorage.removeItem('token');
+        } catch {}
         window.location.href = '/login';
       }
     }

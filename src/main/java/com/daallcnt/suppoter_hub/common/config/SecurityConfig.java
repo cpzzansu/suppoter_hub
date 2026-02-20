@@ -34,8 +34,11 @@ public class SecurityConfig {
             "/api/supporterHome/login",
             "/actuator/health/login",
             "/api/fetchSheetSupporter",
-            "/api/fetchSheetForLeader",
+            "/api/fetchSheetForLeaderByToken",
             "/api/fetchRanking",
+            "/api/fetchDirectChildrenRanking",
+            "/api/matchSupporterByPhones",
+            "/api/minjoo/register",
     };
 
     /**

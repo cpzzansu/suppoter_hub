@@ -38,6 +38,12 @@ const AdminHome = () => {
           </button>
           <button
               style={{padding: '1vw', marginLeft: '2vw', cursor: 'pointer'}}
+              onClick={() => navigate('/directChildrenRanking')}
+          >
+            직계자손 랭킹
+          </button>
+          <button
+              style={{padding: '1vw', marginLeft: '2vw', cursor: 'pointer'}}
               onClick={() => navigate('/region')}
           >
             지역
@@ -47,6 +53,12 @@ const AdminHome = () => {
               onClick={() => navigate('/rightMember')}
           >
             당원
+          </button>
+          <button
+              style={{padding: '1vw', marginLeft: '2vw', cursor: 'pointer'}}
+              onClick={() => navigate('/admin/sheetToken')}
+          >
+            대표트리 토큰
           </button>
           <div
               style={{

@@ -44,6 +44,7 @@ public class Suppoter {
         this.phone = formDataDto.getPhone();
         this.address = formDataDto.getAddress();
         this.recommend = formDataDto.getRecommend();
+        this.isRightsMember = formDataDto.getIsRightsMember();
         this.recommender = recommender;
     }
 

@@ -15,5 +15,6 @@ public class FormDataDto {
     private String address;
     private String recommend;
     private Long selectedRecommendId;
+    private Boolean isRightsMember;
 
 }

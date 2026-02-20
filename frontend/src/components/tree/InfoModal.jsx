@@ -12,8 +12,6 @@ export default function InfoModal({ isOpen, children, onClose }) {
     </div>
   );
 
-  return createPortal(
-    modal,
-    document.getElementById('modal-root'), // <-- body 바로 아래로
-  );
+  // removeChild 오류 방지: body가 가장 안정적인 Portal 대상
+  return createPortal(modal, document.body);
 }

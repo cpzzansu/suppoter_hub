@@ -103,15 +103,20 @@ public class SupporterHomeServiceImpl implements SupporterHomeService {
 
     @Override
     public void modifyForm(FormDataDto formDataDto) {
-        Suppoter recommender = null;
-
-        if (!formDataDto.getRecommend().equals("대표")) {
-            recommender = suppoterRepository.findById(formDataDto.getSelectedRecommendId()).orElse(null);
-            if (recommender == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-
         Suppoter suppoter = suppoterRepository.findById(formDataDto.getId()).orElse(null);
         if (suppoter == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+        Suppoter recommender = suppoter.getRecommender(); // 기존 recommender 유지
+
+        // 추천인을 변경하는 경우에만 새로운 recommender 설정
+        if (formDataDto.getSelectedRecommendId() != null) {
+            if (!formDataDto.getRecommend().equals("대표")) {
+                recommender = suppoterRepository.findById(formDataDto.getSelectedRecommendId()).orElse(null);
+                if (recommender == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            } else {
+                recommender = null; // 대표로 변경하는 경우
+            }
+        }
 
         suppoter.modifyForm(formDataDto, recommender);
         suppoterRepository.save(suppoter);

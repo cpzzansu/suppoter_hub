@@ -1,0 +1,1 @@
+SELECT * FROM suppoter where name = '박희수';

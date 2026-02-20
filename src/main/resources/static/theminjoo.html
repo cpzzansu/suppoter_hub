@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>관영 서포터 당원찾기</title>
+    <meta property="og:title" content="관영 서포터 당원찾기" />
+    <meta property="og:description" content="연락처에서 당원을 찾아보세요." />
+    <!-- og:image, og:url은 절대경로로 설정하세요. 예: https://도메인.com/assets/images/theminjoo_og_image.png -->
+    <meta property="og:image" content="https://xn----qd6ew2cx70c6uae40epc.com/assets/images/theminjoo_og_image.png" />
+    <meta property="og:url" content="" />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+        background: #dfecff;
+      }
+      #app {
+        padding: 16vw 10% 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 2vw;
+      }
+      .logo {
+        width: 100%;
+        display: block;
+        margin-bottom: 10vw;
+      }
+      .input {
+        width: 100%;
+        height: 14vw;
+        padding: 4vw 5vw;
+        font-size: 3.6vw;
+        border: 1px solid #aaaaaa;
+      }
+      .input.error {
+        border-color: #c00;
+        outline-color: #c00;
+      }
+      .phone-err {
+        color: #c00;
+        font-size: 3.2vw;
+        margin-top: -1vw;
+      }
+      .btn {
+        padding: 3.6vw 0;
+        border-radius: 4vw;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        border: 1px solid #ddd;
+        font-size: 4.4vw;
+      }
+      .btn-primary {
+        background: #003b96;
+        color: #fff;
+        margin-top: 2vw;
+        margin-bottom: 2.6vw;
+      }
+      .btn-secondary {
+        background: #fff;
+        color: #000;
+      }
+      .btn-secondary:disabled {
+        background: #999;
+        color: #fff;
+      }
+      .btn-pdf {
+        background: #006465;
+        color: #fff;
+      }
+      .btn-pdf:disabled {
+        background: #999;
+        opacity: 0.8;
+      }
+      .msg {
+        padding: 10px;
+        background: #f7f7f7;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #444;
+      }
+      .list-wrap {
+        border: 1px solid #eee;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 8px;
+      }
+      .list-title {
+        padding: 10px 12px;
+        background: #fafafa;
+        font-weight: 600;
+      }
+      .list-body {
+        max-height: 300px;
+        overflow: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      thead th {
+        background: #f6f6f6;
+      }
+      #fileInput {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <input type="file" id="fileInput" accept=".vcf,text/vcard" />
+    <noscript>JavaScript를 켜야 이 페이지를 사용할 수 있습니다.</noscript>
+    <script>
+      (function () {
+        const API_BASE = 'https://xn----qd6ew2cx70c6uae40epc.com/api';
+        // 로컬 개발: const API_BASE = window.location.origin + '/api';
+
+        function decodeQuotedPrintable(str) {
+          if (!str || typeof str !== 'string') return str;
+          if (!(/=[0-9A-Fa-f]{2}/i).test(str)) return str;
+          try {
+            var cleaned = str.replace(/=\r?\n/g, '');
+            var bytes = [];
+            var i = 0;
+            while (i < cleaned.length) {
+              if (
+                cleaned.charAt(i) === '=' &&
+                i + 2 < cleaned.length &&
+                /^[0-9A-Fa-f]{2}$/i.test(cleaned.slice(i + 1, i + 3))
+              ) {
+                bytes.push(parseInt(cleaned.slice(i + 1, i + 3), 16));
+                i += 3;
+              } else {
+                var code = cleaned.charCodeAt(i);
+                if (code <= 0x7f) {
+                  bytes.push(code);
+                } else {
+                  var enc = new TextEncoder().encode(cleaned.charAt(i));
+                  for (var j = 0; j < enc.length; j++) bytes.push(enc[j]);
+                }
+                i += 1;
+              }
+            }
+            return new TextDecoder('utf-8').decode(new Uint8Array(bytes));
+          } catch (e) {
+            return str;
+          }
+        }
+
+        function parseVcf(text) {
+          const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+          const lines = normalized.split('\n');
+          const unfolded = [];
+          for (const line of lines) {
+            if (
+              (line.startsWith(' ') || line.startsWith('\t')) &&
+              unfolded.length
+            ) {
+              let prev = unfolded[unfolded.length - 1];
+              if (prev.endsWith('=')) prev = prev.slice(0, -1);
+              unfolded[unfolded.length - 1] = prev + line.slice(1);
+            } else {
+              unfolded.push(line);
+            }
+          }
+          const contacts = [];
+          let current = null;
+          for (const raw of unfolded) {
+            const line = raw.trim();
+            if (!line) continue;
+            if (line.toUpperCase() === 'BEGIN:VCARD') {
+              current = { name: '', tel: '', email: '' };
+              continue;
+            }
+            if (line.toUpperCase() === 'END:VCARD') {
+              if (current) contacts.push(current);
+              current = null;
+              continue;
+            }
+            if (!current) continue;
+            const idx = line.indexOf(':');
+            if (idx < 0) continue;
+            const keyPart = line.slice(0, idx).toUpperCase();
+            let value = line.slice(idx + 1).trim();
+            value = decodeQuotedPrintable(value);
+            if (keyPart.startsWith('FN')) current.name = current.name || value;
+            else if (keyPart.startsWith('N') && !current.name) {
+              const parts = value.split(';');
+              current.name =
+                `${parts[0] ?? ''}${parts[1] ?? ''}`.trim() || current.name;
+            } else if (keyPart.startsWith('TEL') && !current.tel)
+              current.tel = value;
+            else if (keyPart.startsWith('EMAIL') && !current.email)
+              current.email = value;
+          }
+          return contacts;
+        }
+
+        function formatPhoneDisplay(digits) {
+          if (digits.length <= 3) return digits;
+          if (digits.length <= 7)
+            return digits.slice(0, 3) + '-' + digits.slice(3);
+          return (
+            digits.slice(0, 3) +
+            '-' +
+            digits.slice(3, 7) +
+            '-' +
+            digits.slice(7)
+          );
+        }
+
+        async function minjooRegister(payload) {
+          const res = await fetch(API_BASE + '/minjoo/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          return res.json();
+        }
+
+        const state = {
+          name: '',
+          phone: '',
+          phoneError: '',
+          idNumber: '',
+          recommend: '',
+          contactConsent: false,
+          contacts: [],
+          matchedContacts: [],
+          message: '',
+          showList: false,
+          pdfLoading: false,
+        };
+
+        function render() {
+          const app = document.getElementById('app');
+          app.innerHTML =
+            '<img class="logo" src="/assets/images/theminjoo_logo.png" alt="로고" />' +
+            '<input type="text" placeholder="이름" id="name" class="input" value="' +
+            state.name.split('&').join('&amp;').split('"').join('&quot;').split('<').join('&lt;') +
+            '" />' +
+            '<input type="tel" placeholder="전화번호 (010-0000-0000)" id="phone" class="input ' +
+            (state.phoneError ? 'error' : '') +
+            '" value="' +
+            formatPhoneDisplay(state.phone).split('"').join('&quot;') +
+            '" maxlength="13" inputmode="numeric" />' +
+            (state.phoneError ? '<span class="phone-err">' + state.phoneError + '</span>' : '') +
+            '<input type="text" placeholder="식별번호" id="idNumber" class="input" value="' +
+            state.idNumber.split('&').join('&amp;').split('"').join('&quot;').split('<').join('&lt;') +
+            '" />' +
+            '<input type="text" placeholder="추천인" id="recommend" class="input" value="' +
+            state.recommend.split('&').join('&amp;').split('"').join('&quot;').split('<').join('&lt;') +
+            '" />' +
+            '<label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:14px;color:#222;">' +
+            '<input type="checkbox" id="contactConsent" ' +
+            (state.contactConsent ? 'checked' : '') +
+            ' style="width:18px;height:18px;" />' +
+            '연락처 활용에 동의합니다. (필수)</label>' +
+            '<button type="button" class="btn btn-primary" id="vcfBtn">연락처 당원찾기</button>' +
+            '<button type="button" class="btn btn-secondary" id="toggleList" style="background:' +
+            (state.contacts.length === 0 ? '#999' : '#fff') +
+            ';color:' +
+            (state.contacts.length === 0 ? '#fff' : '#000') +
+            '">내 연락처 ' +
+            (state.contacts.length > 0 ? '(' + state.contacts.length + '명)' : '') +
+            '</button>' +
+            '<button type="button" class="btn btn-pdf" id="pdfBtn" ' +
+            (state.pdfLoading || state.matchedContacts.length === 0 ? 'disabled' : '') +
+            ' style="background:' +
+            (state.contacts.length === 0 || state.pdfLoading || state.matchedContacts.length === 0 ? '#999' : '#006465') +
+            ';opacity:' +
+            (state.pdfLoading ? 0.8 : 1) +
+            '">' +
+            (state.pdfLoading ? 'PDF 생성 중...' : '당원 명단 다운로드' + (state.matchedContacts.length > 0 ? ' (' + state.matchedContacts.length + '명)' : '')) +
+            '</button>' +
+            (state.message ? '<div class="msg">' + state.message.split('<').join('&lt;').split('&').join('&amp;') + '</div>' : '') +
+            (state.showList && state.matchedContacts.length > 0
+              ? '<div class="list-wrap"><div class="list-title">매칭된 연락처 (' +
+                state.matchedContacts.length +
+                '명)</div><div class="list-body"><table><thead><tr><th>이름</th><th>전화번호</th></tr></thead><tbody>' +
+                state.matchedContacts
+                  .map(function (c) {
+                    var n = (c.name || '-').split('<').join('&lt;').split('&').join('&amp;').split('"').join('&quot;');
+                    var p = (c.phone || c.tel || '-').split('<').join('&lt;').split('&').join('&amp;');
+                    return '<tr><td>' + n + '</td><td>' + p + '</td></tr>';
+                  })
+                  .join('') +
+                '</tbody></table></div></div>'
+              : '');
+
+          document.getElementById('name').oninput = function (e) {
+            state.name = e.target.value;
+            render();
+          };
+          document.getElementById('idNumber').oninput = function (e) {
+            state.idNumber = e.target.value;
+            render();
+          };
+          document.getElementById('recommend').oninput = function (e) {
+            state.recommend = e.target.value;
+            render();
+          };
+          document.getElementById('contactConsent').onchange = function (e) {
+            state.contactConsent = !!e.target.checked;
+            render();
+          };
+          document.getElementById('phone').oninput = function (e) {
+            var digits = e.target.value.replace(/\D/g, '').slice(0, 11);
+            state.phone = digits;
+            state.phoneError =
+              digits.length >= 3 && digits.slice(0, 3) !== '010'
+                ? '전화번호는 010으로 시작해야 합니다.'
+                : '';
+            render();
+          };
+          document.getElementById('vcfBtn').onclick = function () {
+            document.getElementById('fileInput').click();
+          };
+          document.getElementById('toggleList').onclick = function () {
+            state.showList = !state.showList;
+            render();
+          };
+          document.getElementById('pdfBtn').onclick = handleDownloadPdf;
+        }
+
+        document.getElementById('fileInput').onchange = async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          if (file.size > 5 * 1024 * 1024) {
+            state.message = '파일이 너무 큽니다. 5MB 이하로 줄여 주세요.';
+            e.target.value = '';
+            render();
+            return;
+          }
+          try {
+            const text = await file.text();
+            const parsed = parseVcf(text);
+            state.contacts = parsed;
+            state.message =
+              'VCF에서 연락처 ' + parsed.length + '건을 읽었습니다.';
+            state.registerLoading = true;
+            state.message = '찾는 중...';
+            render();
+            const payload = {
+              name: state.name.trim(),
+              phone: state.phone.replace(/\D/g, ''),
+              idNumber: state.idNumber.trim(),
+              recommend: state.recommend.trim(),
+              contactConsent: state.contactConsent,
+              contacts: state.contacts
+                .map((c) => ({ name: c.name ?? '', phone: c.tel ?? '' }))
+                .filter((c) => c.phone),
+            };
+            const phoneDigits = state.phone.replace(/\D/g, '');
+            if (!phoneDigits) {
+              state.message = '전화번호를 입력해 주세요.';
+            } else if (
+              phoneDigits.length !== 11 ||
+              phoneDigits.slice(0, 3) !== '010'
+            ) {
+              state.message = '전화번호는 010으로 시작하는 11자리여야 합니다.';
+            } else if (!payload.idNumber) {
+              state.message = '식별번호를 입력해 주세요.';
+            } else if (!payload.contactConsent) {
+              state.message = '연락처 활용 동의가 필요합니다.';
+            } else {
+              try {
+                const res = await minjooRegister(payload);
+                if (res?.success) {
+                  state.matchedContacts = res.matchedContacts ?? [];
+                  state.message = res.message ?? '당원을 찾았습니다.';
+                } else {
+                  state.matchedContacts = [];
+                  state.message = res?.message ?? '당원 찾기에 실패했습니다.';
+                }
+              } catch (e) {
+                state.matchedContacts = [];
+                state.message = '당원을 찾는데 실패했습니다.';
+              }
+            }
+          } catch (e) {
+            state.message = 'VCF 파일 읽기에 실패했습니다.';
+          }
+          state.registerLoading = false;
+          e.target.value = '';
+          render();
+        };
+
+        async function handleDownloadPdf() {
+          if (state.matchedContacts.length === 0) {
+            state.message = '매칭된 연락처가 없습니다.';
+            render();
+            return;
+          }
+          state.pdfLoading = true;
+          state.message = '';
+          render();
+          const ROWS_PER_PAGE = 35;
+          const pages = [];
+          for (
+            let i = 0;
+            i < state.matchedContacts.length;
+            i += ROWS_PER_PAGE
+          ) {
+            pages.push(state.matchedContacts.slice(i, i + ROWS_PER_PAGE));
+          }
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF('p', 'mm', 'a4');
+          const pageW = doc.internal.pageSize.getWidth();
+          const pageH = doc.internal.pageSize.getHeight();
+          for (let p = 0; p < pages.length; p++) {
+            const rows = pages[p];
+            const div = document.createElement('div');
+            div.style.cssText =
+              'position:fixed;left:-9999px;top:0;z-index:-1;width:700px;padding:16px;font-family:Noto Sans KR,sans-serif;font-size:12px;color:#000;background:#fff;';
+            div.innerHTML =
+              '<div style="font-size:14px;font-weight:bold;margin-bottom:10px;">당원 명단</div><table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr style="background:#f5f5f5"><th style="padding:8px;border:1px solid #333">번호</th><th style="padding:8px;border:1px solid #333">이름</th><th style="padding:8px;border:1px solid #333">전화번호</th><th style="padding:8px;border:1px solid #333">비고</th></tr></thead><tbody>' +
+              rows
+                .map(
+                  (c, i) =>
+                    '<tr><td style="padding:6px;border:1px solid #333;text-align:center">' +
+                    (p * ROWS_PER_PAGE + i + 1) +
+                    '</td><td style="padding:6px;border:1px solid #333">' +
+                    ((c.name ?? '-') + '').split('<').join('&lt;').split('&').join('&amp;') +
+                    '</td><td style="padding:6px;border:1px solid #333">' +
+                    ((c.phone ?? c.tel ?? '-') + '').split('<').join('&lt;').split('&').join('&amp;') +
+                    '</td><td style="padding:6px;border:1px solid #333"></td></tr>',
+                )
+                .join('') +
+              '</tbody></table>';
+            document.body.appendChild(div);
+            try {
+              const canvas = await html2canvas(div, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+              });
+              document.body.removeChild(div);
+              const imgData = canvas.toDataURL('image/jpeg', 0.95);
+              if (p > 0) doc.addPage();
+              const imgH = (canvas.height / canvas.width) * (pageW - 10);
+              doc.addImage(
+                imgData,
+                'JPEG',
+                5,
+                5,
+                pageW - 10,
+                Math.min(imgH, pageH - 10),
+              );
+            } catch (err) {
+              document.body.contains(div) && document.body.removeChild(div);
+              state.message = 'PDF 생성에 실패했습니다.';
+              state.pdfLoading = false;
+              render();
+              return;
+            }
+          }
+          doc.save('당원명단.pdf');
+          state.pdfLoading = false;
+          render();
+        }
+
+        render();
+      })();
+    </script>
+  </body>
+</html>

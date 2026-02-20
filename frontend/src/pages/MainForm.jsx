@@ -93,6 +93,24 @@ const MainForm = () => {
           </div>
         </button>
       </div>
+      <div style={{ display: 'flex', justifyContent: 'end', marginTop: '2vw' }}>
+        <button
+          style={{
+            padding: '1.5vw 6vw',
+            fontSize: '3vw',
+            fontWeight: 'bold',
+            color: '#0F418E',
+            border: '1px solid #0F418E',
+            backgroundColor: '#ffffff',
+            borderRadius: '5px',
+            marginRight: '6vw',
+            cursor: 'pointer',
+          }}
+          onClick={() => navigate('/theminjoo')}
+        >
+          연락처 가져오기
+        </button>
+      </div>
       <div style={{ position: 'relative', width: '100%' }}>
         <div
           style={{
