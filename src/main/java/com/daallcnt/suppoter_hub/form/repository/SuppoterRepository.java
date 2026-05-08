@@ -10,6 +10,7 @@ import com.daallcnt.suppoter_hub.form.payload.SuppoterNodeView;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -164,12 +165,38 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
     r.id as recommenderId
   from Suppoter s
   left join s.recommender r
-  where (:region = '전체' or coalesce(s.address,'') like concat('%', :region, '%'))
+  where (
+         (:unapplied = true and (
+             coalesce(s.address,'') = ''
+             or (
+                 coalesce(s.address,'') not like '%전주%'
+                 and coalesce(s.address,'') not like '%군산%'
+                 and coalesce(s.address,'') not like '%익산%'
+                 and coalesce(s.address,'') not like '%완주%'
+                 and coalesce(s.address,'') not like '%김제%'
+                 and coalesce(s.address,'') not like '%남원%'
+                 and coalesce(s.address,'') not like '%정읍%'
+                 and coalesce(s.address,'') not like '%고창%'
+                 and coalesce(s.address,'') not like '%무주%'
+                 and coalesce(s.address,'') not like '%진안%'
+                 and coalesce(s.address,'') not like '%임실%'
+                 and coalesce(s.address,'') not like '%부안%'
+                 and coalesce(s.address,'') not like '%장수%'
+                 and coalesce(s.address,'') not like '%순창%'
+             )
+         ))
+         or (:unapplied = false and (:region = '전체' or coalesce(s.address,'') like concat('%', :region, '%')))
+       )
     and (:keyword is null or trim(:keyword) = ''
          or s.name like concat('%', trim(:keyword), '%')
          or s.phone like concat('%', trim(:keyword), '%'))
 """)
-    Page<RegionRowView>  findByRegion(@Param("region") String region, @Param("keyword") String keyword, Pageable pageable);
+    Page<RegionRowView>  findByRegion(
+            @Param("region") String region,
+            @Param("keyword") String keyword,
+            @Param("unapplied") boolean unapplied,
+            Pageable pageable
+    );
 
     @Query("""
         select
@@ -202,7 +229,28 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
                 r.name as recommenderName
               from Suppoter s
               left join s.recommender r
-              where (:region = '전체' or coalesce(s.address,'') like concat('%', :region, '%'))
+              where (
+                     (:unapplied = true and (
+                         coalesce(s.address,'') = ''
+                         or (
+                             coalesce(s.address,'') not like '%전주%'
+                             and coalesce(s.address,'') not like '%군산%'
+                             and coalesce(s.address,'') not like '%익산%'
+                             and coalesce(s.address,'') not like '%완주%'
+                             and coalesce(s.address,'') not like '%김제%'
+                             and coalesce(s.address,'') not like '%남원%'
+                             and coalesce(s.address,'') not like '%정읍%'
+                             and coalesce(s.address,'') not like '%고창%'
+                             and coalesce(s.address,'') not like '%무주%'
+                             and coalesce(s.address,'') not like '%진안%'
+                             and coalesce(s.address,'') not like '%임실%'
+                             and coalesce(s.address,'') not like '%부안%'
+                             and coalesce(s.address,'') not like '%장수%'
+                             and coalesce(s.address,'') not like '%순창%'
+                         )
+                     ))
+                     or (:unapplied = false and (:region = '전체' or coalesce(s.address,'') like concat('%', :region, '%')))
+                   )
                 and (:keyword is null or trim(:keyword) = ''
                      or s.name like concat('%', trim(:keyword), '%')
                      or s.phone like concat('%', trim(:keyword), '%'))
@@ -210,7 +258,8 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
             """)
     List<RegionRowView> findExcelBaseByRegionAndKeyword(
             @Param("region") String region,
-            @Param("keyword") String keyword
+            @Param("keyword") String keyword,
+            @Param("unapplied") boolean unapplied
     );
 
     /**
@@ -268,4 +317,13 @@ public interface SuppoterRepository extends JpaRepository<Suppoter, Long> {
         WHERE s.phone IS NOT NULL AND LENGTH(TRIM(s.phone)) > 0
         """)
     List<MatchedSupporterView> findAllWithPhoneProjection();
+
+    /**
+     * targetId를 추천인으로 가진 모든 하위 서포터의 recommender_id를 newRecommenderId로 일괄 변경.
+     * newRecommenderId가 null이면 추천인 없음으로 설정된다.
+     * 삭제 전 cascade 방지 용도로 사용.
+     */
+    @Modifying
+    @Query(value = "UPDATE suppoter SET recommender_id = :newRecommenderId WHERE recommender_id = :targetId", nativeQuery = true)
+    void reassignChildren(@Param("targetId") Long targetId, @Param("newRecommenderId") Long newRecommenderId);
 }

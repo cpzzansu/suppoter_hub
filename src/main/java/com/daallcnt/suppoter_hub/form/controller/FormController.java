@@ -2,6 +2,7 @@ package com.daallcnt.suppoter_hub.form.controller;
 
 import com.daallcnt.suppoter_hub.common.exception.APIException;
 import com.daallcnt.suppoter_hub.common.security.SheetLinkTokenProvider;
+import com.daallcnt.suppoter_hub.form.entity.SuppoterDeletionLog;
 import com.daallcnt.suppoter_hub.form.payload.*;
 
 import com.daallcnt.suppoter_hub.form.service.FormService;
@@ -38,6 +39,22 @@ public class FormController {
     public ResponseEntity<AdminHomeDto> fetchTreeMap(@RequestParam(name = "currentPage") int currentPage) {
         log.debug("fetchTreeMap currentPage: {}", currentPage);
         return formService.fetchTreeMap(currentPage);
+    }
+
+    @GetMapping("/fetchSupportersTotalCount")
+    public ResponseEntity<SupportersTotalCountDto> fetchSupportersTotalCount() {
+        log.debug("fetchSupportersTotalCount");
+        return formService.fetchSupportersTotalCount();
+    }
+
+    /**
+     * 외부 연동용 공개 API.
+     * 루트(전체) 서포터즈 총 인원을 반환한다.
+     */
+    @GetMapping("/public/supporters/count")
+    public ResponseEntity<SupportersTotalCountDto> fetchPublicSupportersCount() {
+        log.debug("fetchPublicSupportersCount");
+        return formService.fetchSupportersTotalCount();
     }
 
     @GetMapping("/fetchLeaderNode")
@@ -107,12 +124,13 @@ public class FormController {
     @GetMapping("/fetchRegion")
     public ResponseEntity<Page<RegionRowDto>> fetchRegion(@RequestParam(name = "region") String region,
                                                         @RequestParam(name = "keyword") String keyword,
+                                                        @RequestParam(name = "unapplied", defaultValue = "false") boolean unapplied,
                                                         @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-        log.debug("fetchRegion region: {}, keyword: {}", region, keyword);
+        log.debug("fetchRegion region: {}, keyword: {}, unapplied: {}", region, keyword, unapplied);
         String kw = (keyword == null) ? null : keyword.trim();
         if (kw != null && kw.isEmpty()) kw = null;
 
-        return formService.fetchRegion(region, kw, pageable);
+        return formService.fetchRegion(region, kw, unapplied, pageable);
     }
 
     @GetMapping("/fetchRightMember")
@@ -123,10 +141,32 @@ public class FormController {
 
     @GetMapping("/fetchRegionExcel")
     public ResponseEntity<List<RegionRowView>> fetchRegionExcel(@RequestParam(name = "region") String region,
-                                                                @RequestParam(name = "keyword") String keyword) {
+                                                                @RequestParam(name = "keyword") String keyword,
+                                                                @RequestParam(name = "unapplied", defaultValue = "false") boolean unapplied) {
 
-        log.debug("fetchRegionExcel region: {}, keyword: {}", region, keyword);
-        return formService.fetchRegionExcel(region, keyword);
+        log.debug("fetchRegionExcel region: {}, keyword: {}, unapplied: {}", region, keyword, unapplied);
+        return formService.fetchRegionExcel(region, keyword, unapplied);
+    }
+
+    /**
+     * 삭제 로그 전체 조회 (관리자 전용).
+     */
+    @GetMapping("/admin/suppoter/deletion-log")
+    public ResponseEntity<List<SuppoterDeletionLog>> fetchDeletionLog() {
+        return formService.fetchDeletionLog();
+    }
+
+    /**
+     * 서포터 삭제 (관리자 전용).
+     * 삭제 전 suppoter_deletion_log에 스냅샷을 저장하고, 피추천자는 상위 추천인으로 재할당한다.
+     */
+    @DeleteMapping("/admin/suppoter/{id}")
+    public ResponseEntity<Void> deleteSuppoter(
+            @PathVariable Long id,
+            @RequestParam(name = "reason", required = false) String reason) {
+        log.info("deleteSuppoter id={}, reason={}", id, reason);
+        formService.deleteSuppoterWithLog(id, reason);
+        return ResponseEntity.noContent().build();
     }
 
     /**

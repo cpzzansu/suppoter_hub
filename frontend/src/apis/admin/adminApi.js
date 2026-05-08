@@ -90,9 +90,9 @@ export const fetchDirectChildrenRanking = async ({
   return data;
 };
 
-export const fetchRegion = async ({ region, keyword, page, size }) => {
+export const fetchRegion = async ({ region, keyword, page, size, unapplied = false }) => {
   const { data } = await api.get('/fetchRegion', {
-    params: { region, keyword, page, size },
+    params: { region, keyword, page, size, unapplied },
   });
   return data;
 };
@@ -102,8 +102,13 @@ export const fetchRightMember = async () => {
   return data;
 };
 
-export const fetchRegionExcel = async ({ region, keyword }) => {
-  return await api.get('/fetchRegionExcel', { params: { region, keyword } });
+export const fetchRegionExcel = async ({ region, keyword, unapplied = false }) => {
+  return await api.get('/fetchRegionExcel', { params: { region, keyword, unapplied } });
+};
+
+export const fetchDeletionLog = async () => {
+  const { data } = await api.get('/admin/suppoter/deletion-log');
+  return data;
 };
 
 /** Minjoo 등록: 4개 입력 + 연락처 배열 */

@@ -99,20 +99,20 @@ function normalizePhone(value) {
 }
 
 const btnBase = {
-  padding: '3.6vw 0',
-  borderRadius: '4vw',
+  padding: '3.6cqw 0',
+  borderRadius: '4cqw',
   fontWeight: 600,
   cursor: 'pointer',
   width: '100%',
   border: '1px solid #ddd',
-  fontSize: '4.4vw',
+  fontSize: '4.4cqw',
 };
 
 const inputStyle = {
   width: '100%',
-  height: '14vw',
-  padding: '4vw 5vw',
-  fontSize: '3.6vw',
+  height: '14cqw',
+  padding: '4cqw 5cqw',
+  fontSize: '3.6cqw',
   border: '1px solid #AAAAAA',
   boxSizing: 'border-box',
 };
@@ -321,18 +321,22 @@ const Theminjoo = () => {
   return (
     <div
       style={{
-        padding: '16vw 10% 40px',
+        width: '100%',
+        maxWidth: '430px',
+        margin: '0 auto',
+        containerType: 'inline-size',
+        padding: '16cqw 10% 40px',
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
-        gap: '2vw',
+        gap: '2cqw',
         backgroundColor: '#DFECFF',
       }}
     >
       <img
         src='/assets/images/theminjoo_logo.png'
         alt='로고'
-        style={{ width: '100%', display: 'block', marginBottom: '10vw' }}
+        style={{ width: '100%', display: 'block', marginBottom: '10cqw' }}
       />
 
       <input
@@ -356,7 +360,7 @@ const Theminjoo = () => {
         }}
       />
       {phoneError ? (
-        <span style={{ color: '#c00', fontSize: '3.2vw', marginTop: '-1vw' }}>
+        <span style={{ color: '#c00', fontSize: '3.2cqw', marginTop: '-1cqw' }}>
           {phoneError}
         </span>
       ) : null}
@@ -378,9 +382,9 @@ const Theminjoo = () => {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '2vw',
-          marginTop: '0.8vw',
-          fontSize: '3.4vw',
+          gap: '2cqw',
+          marginTop: '0.8cqw',
+          fontSize: '3.4cqw',
           color: '#222',
         }}
       >
@@ -388,7 +392,7 @@ const Theminjoo = () => {
           type='checkbox'
           checked={contactConsent}
           onChange={(e) => setContactConsent(e.target.checked)}
-          style={{ width: '4.5vw', height: '4.5vw' }}
+          style={{ width: '4.5cqw', height: '4.5cqw' }}
         />
         연락처 활용에 동의합니다. (필수)
       </label>
@@ -400,8 +404,8 @@ const Theminjoo = () => {
           ...btnBase,
           background: '#003B96',
           color: '#fff',
-          marginTop: '2vw',
-          marginBottom: '2.6vw',
+          marginTop: '2cqw',
+          marginBottom: '2.6cqw',
         }}
       >
         연락처 당원찾기

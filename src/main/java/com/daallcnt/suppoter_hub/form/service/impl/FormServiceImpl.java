@@ -3,8 +3,10 @@ package com.daallcnt.suppoter_hub.form.service.impl;
 import com.daallcnt.suppoter_hub.common.exception.DuplicationSupporterException;
 import com.daallcnt.suppoter_hub.form.entity.SupporterSignupLog;
 import com.daallcnt.suppoter_hub.form.entity.Suppoter;
+import com.daallcnt.suppoter_hub.form.entity.SuppoterDeletionLog;
 import com.daallcnt.suppoter_hub.form.payload.*;
 import com.daallcnt.suppoter_hub.form.repository.SupporterSignupLogRepository;
+import com.daallcnt.suppoter_hub.form.repository.SuppoterDeletionLogRepository;
 import com.daallcnt.suppoter_hub.form.repository.SuppoterRepository;
 import com.daallcnt.suppoter_hub.form.service.AligoMMSSender;
 import com.daallcnt.suppoter_hub.form.service.FormService;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +39,7 @@ public class FormServiceImpl implements FormService {
 
     private final SuppoterRepository suppoterRepository;
     private final SupporterSignupLogRepository supporterSignupLogRepository;
+    private final SuppoterDeletionLogRepository suppoterDeletionLogRepository;
     private final ApplicationEventPublisher publisher;
 
     @Override
@@ -45,11 +49,6 @@ public class FormServiceImpl implements FormService {
         LocalDate today = LocalDate.now();
 
         boolean loggedToday = supporterSignupLogRepository.existsByIpAndDay(ip, today);
-
-        if (loggedToday) {
-            throw new DuplicationSupporterException("같은 기기로 하루에 두번 제출이 불가능 합니다.");
-        }
-
 
         if (suppoterRepository.existsByPhone(formDataDto.getPhone())){
             throw new DuplicationSupporterException("이미 가입된 전화번호 입니다.");
@@ -106,6 +105,15 @@ public class FormServiceImpl implements FormService {
                         .rootNodes(rootNodes)
                         .totalSupportersNumber(suppoterRepository.countByRecommenderIsNotNull())
                         .build());
+    }
+
+    @Override
+    public ResponseEntity<SupportersTotalCountDto> fetchSupportersTotalCount() {
+        return ResponseEntity.ok(
+                SupportersTotalCountDto.builder()
+                        .totalSupportersNumber(suppoterRepository.count())
+                        .build()
+        );
     }
 
     @Override
@@ -287,11 +295,15 @@ public class FormServiceImpl implements FormService {
         return ResponseEntity.ok(dtos);
     }
 
-    public ResponseEntity<Page<RegionRowDto>> fetchRegion(String region, String keyword, Pageable pageable) {
+    public ResponseEntity<Page<RegionRowDto>> fetchRegion(String region, String keyword, boolean unapplied, Pageable pageable) {
         String rg = (region == null || region.trim().isEmpty()) ? "전체" : region.trim();
+        boolean onlyUnapplied = unapplied || "미적용".equals(rg);
+        if (onlyUnapplied) {
+            rg = "전체";
+        }
         String kw = (keyword == null || keyword.trim().isEmpty()) ? null : keyword.trim();
 
-        Page<RegionRowView> page = suppoterRepository.findByRegion(rg, kw, pageable);
+        Page<RegionRowView> page = suppoterRepository.findByRegion(rg, kw, onlyUnapplied, pageable);
         List<RegionRowView> content = page.getContent();
 
         // 이번 페이지에서 시작할 추천자 ids
@@ -354,8 +366,13 @@ public class FormServiceImpl implements FormService {
     }
 
     @Override
-    public ResponseEntity<List<RegionRowView>> fetchRegionExcel(String region, String keyword) {
-        return ResponseEntity.ok(suppoterRepository.findExcelBaseByRegionAndKeyword(region,keyword));
+    public ResponseEntity<List<RegionRowView>> fetchRegionExcel(String region, String keyword, boolean unapplied) {
+        String rg = (region == null || region.trim().isEmpty()) ? "전체" : region.trim();
+        boolean onlyUnapplied = unapplied || "미적용".equals(rg);
+        if (onlyUnapplied) {
+            rg = "전체";
+        }
+        return ResponseEntity.ok(suppoterRepository.findExcelBaseByRegionAndKeyword(rg, keyword, onlyUnapplied));
     }
 
     private Suppoter resolveRecommender(String recommendName) {
@@ -452,6 +469,47 @@ public class FormServiceImpl implements FormService {
 
         node.setTotalDescendantCount(descendants);
         return node;
+    }
+
+    @Override
+    public void deleteSuppoterWithLog(Long id, String reason) {
+        Suppoter target = suppoterRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 서포터입니다. id=" + id));
+
+        String deletedBy = SecurityContextHolder.getContext().getAuthentication() != null
+                ? SecurityContextHolder.getContext().getAuthentication().getName()
+                : "unknown";
+
+        Suppoter grandparent = target.getRecommender();
+        Long grandparentId = grandparent != null ? grandparent.getId() : null;
+        String recommenderName = grandparent != null ? grandparent.getName() : null;
+
+        // 1. 삭제 증거 보존
+        suppoterDeletionLogRepository.save(SuppoterDeletionLog.builder()
+                .originalId(target.getId())
+                .name(target.getName())
+                .phone(target.getPhone())
+                .address(target.getAddress())
+                .recommend(target.getRecommend())
+                .recommenderName(recommenderName)
+                .isRightsMember(target.getIsRightsMember())
+                .originalCreatedAt(target.getCreatedAt())
+                .deletedAt(LocalDateTime.now())
+                .deletedBy(deletedBy)
+                .reason(reason)
+                .build());
+
+        // 2. 피추천자를 상위 추천인(grandparent)으로 재할당 (cascade 방지)
+        suppoterRepository.reassignChildren(id, grandparentId);
+
+        // 3. hard delete
+        suppoterRepository.deleteById(id);
+        log.info("서포터 삭제 완료 - id={}, name={}, deletedBy={}", id, target.getName(), deletedBy);
+    }
+
+    @Override
+    public ResponseEntity<List<SuppoterDeletionLog>> fetchDeletionLog() {
+        return ResponseEntity.ok(suppoterDeletionLogRepository.findAll());
     }
 
     private static String normalizeName(String s) {

@@ -15,6 +15,7 @@ import DirectChildrenRanking from './pages/admin/DirectChildrenRanking.jsx';
 import Region from './pages/admin/Region.jsx';
 import RightMember from './pages/admin/RightMember.jsx';
 import SheetToken from './pages/admin/SheetToken.jsx';
+import DeletionLog from './pages/admin/DeletionLog.jsx';
 import LeaderSheet from './pages/LeaderSheet.jsx';
 import Theminjoo from './pages/Theminjoo.jsx';
 
@@ -39,6 +40,7 @@ function App() {
           <Route path={'/region'} element={<Region />} />
           <Route path={'/rightMember'} element={<RightMember />} />
           <Route path={'/admin/sheetToken'} element={<SheetToken />} />
+          <Route path={'/admin/deletionLog'} element={<DeletionLog />} />
         </Route>
         <Route path={'/login'} element={<Login />} />
       </Routes>

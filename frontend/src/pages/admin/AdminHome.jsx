@@ -60,6 +60,12 @@ const AdminHome = () => {
           >
             대표트리 토큰
           </button>
+          <button
+              style={{padding: '1vw', marginLeft: '2vw', cursor: 'pointer'}}
+              onClick={() => navigate('/admin/deletionLog')}
+          >
+            삭제 기록
+          </button>
           <div
               style={{
                 marginLeft: '20px',

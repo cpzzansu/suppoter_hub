@@ -37,6 +37,8 @@ public class SecurityConfig {
             "/api/fetchSheetForLeaderByToken",
             "/api/fetchRanking",
             "/api/fetchDirectChildrenRanking",
+            "/api/fetchSupportersTotalCount",
+            "/api/public/supporters/count",
             "/api/matchSupporterByPhones",
             "/api/minjoo/register",
     };
@@ -89,6 +91,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .headers(headers -> headers.addHeaderWriter((request, response) ->
+                        response.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive, nosnippet, noimageindex")
+                ))
                 .cors(withDefaults());
 
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -96,4 +101,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-

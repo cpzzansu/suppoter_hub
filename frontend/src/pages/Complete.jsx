@@ -1,14 +1,23 @@
 const Complete = () => {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        maxWidth: '430px',
+        margin: '0 auto',
+        containerType: 'inline-size',
+      }}
+    >
       <div
         style={{
           fontFamily: 'PaperLogy',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          marginTop: '7.29vw',
-          fontSize: '5.46vw',
+          marginTop: '7.29cqw',
+          fontSize: '5.46cqw',
           color: '#2DB384',
         }}
       >
@@ -22,27 +31,27 @@ const Complete = () => {
         style={{
           display: 'flex',
           justifyContent: 'center',
-          marginTop: '5.21vw',
-          marginBottom: '5.21vw',
+          marginTop: '5.21cqw',
+          marginBottom: '5.21cqw',
         }}
       >
         <div
           style={{
-            width: '78.12vw',
-            height: '26.2vw',
+            width: '78.12cqw',
+            height: '26.2cqw',
             backgroundColor: 'white',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: '2.6vw',
+            borderRadius: '2.6cqw',
           }}
         >
           <div
             style={{
-              fontSize: '4.37vw',
+              fontSize: '4.37cqw',
               fontWeight: 600,
-              marginBottom: '1.7vw',
+              marginBottom: '1.7cqw',
             }}
           >
             제출이 완료되었습니다.
@@ -53,13 +62,13 @@ const Complete = () => {
         style={{
           display: 'flex',
           justifyContent: 'center',
-          marginBottom: '10vw',
+          marginBottom: '10cqw',
         }}
       >
         <button
           style={{
-            padding: '1.9vw 10vw',
-            fontSize: '3.33vw',
+            padding: '1.9cqw 10cqw',
+            fontSize: '3.33cqw',
             fontWeight: 'bold',
             color: 'white',
             border: 'none',

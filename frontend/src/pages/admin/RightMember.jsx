@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchRightMember } from '../../apis/admin/adminApi.js';
+import * as XLSX from 'xlsx';
 
 const RightMember = () => {
   const { data, isLoading, isError, error } = useQuery({
@@ -12,6 +13,29 @@ const RightMember = () => {
     const arr = Array.isArray(data) ? data : data?.data;
     return Array.isArray(arr) ? arr : [];
   }, [data]);
+
+  const canDownload = !isLoading && !isError && rows.length > 0;
+
+  const handleDownloadExcel = () => {
+    const excelRows = rows.map((r, idx) => ({
+      No: idx + 1,
+      이름: r.name ?? '',
+      추천자: r.recommenderName ?? '',
+      전화번호: r.phone ?? '',
+      주소: r.address ?? '',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(excelRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '권리당원');
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const filename = `권리당원_${yyyy}${mm}${dd}.xlsx`;
+    XLSX.writeFile(wb, filename);
+  };
 
   return (
       <div>
@@ -47,6 +71,22 @@ const RightMember = () => {
             <span>{rows.length}</span>
             <span style={{ opacity: 0.7, fontWeight: 600 }}>명</span>
           </div>
+          <button
+              onClick={handleDownloadExcel}
+              disabled={!canDownload}
+              style={{
+                marginLeft: '12px',
+                padding: '10px 12px',
+                borderRadius: 10,
+                border: '1px solid #ddd',
+                cursor: canDownload ? 'pointer' : 'not-allowed',
+                background: canDownload ? '#2f6fed' : '#eee',
+                color: canDownload ? '#fff' : '#888',
+                fontWeight: 800,
+              }}
+          >
+            엑셀 다운로드
+          </button>
         </div>
         <div style={{ padding: 16, width: '94%', paddingLeft: '3vw' }}>
           {isLoading && <div style={{ padding: '1vw' }}>불러오는 중...</div>}

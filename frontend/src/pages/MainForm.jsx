@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { href, useNavigate, useParams } from 'react-router-dom';
-import { submitForm } from '../apis/form/formApi.js';
+import { useQuery } from '@tanstack/react-query';
+import {
+  fetchSupportersTotalCountApi,
+  submitForm,
+} from '../apis/form/formApi.js';
 import { formatFourDigits, formatPhoneNumber } from '../utils/commonUtil.js';
 import { validateForm } from '../utils/validate.js';
 
@@ -20,6 +24,11 @@ const MainForm = () => {
     recommend: '',
     recommendPhone: '',
     isRightsMember: true,
+  });
+
+  const { data: supportersTotalCountData } = useQuery({
+    queryKey: ['supportersTotalCount'],
+    queryFn: fetchSupportersTotalCountApi,
   });
 
   const handleSubmit = async () => {
@@ -59,6 +68,10 @@ const MainForm = () => {
       style={{
         display: 'flex',
         flexDirection: 'column',
+        width: '100%',
+        maxWidth: '430px',
+        margin: '0 auto',
+        containerType: 'inline-size',
       }}
     >
       <div>
@@ -69,18 +82,67 @@ const MainForm = () => {
         />
         {/*<img style={{width: '100%'}} src="/assets/images/Logo2.png" alt="로고"/>*/}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'end', marginTop: '4vw' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '2.2cqw',
+          marginTop: '4cqw',
+          paddingLeft: '6cqw',
+          paddingRight: '6cqw',
+        }}
+      >
+        <button
+          type='button'
+          style={{
+            flex: '1 1 auto',
+            minHeight: '12.2cqw',
+            padding: '1.6cqw 2.4cqw',
+            color: '#0F418E',
+            border: '1px solid #C9D8EE',
+            background:
+              'linear-gradient(180deg, #FFFFFF 0%, #F7FAFF 100%)',
+            borderRadius: '1.6cqw',
+            boxShadow: '0 0.7cqw 1.6cqw rgba(34, 74, 133, 0.08)',
+            cursor: 'default',
+            textAlign: 'left',
+            lineHeight: 1.2,
+          }}
+        >
+          <div
+            style={{
+              fontSize: '2.35cqw',
+              fontWeight: 700,
+              opacity: 0.78,
+              marginBottom: '0.6cqw',
+            }}
+          >
+            서포터즈
+          </div>
+          <div style={{ fontSize: '4.2cqw', fontWeight: 900 }}>
+            {(supportersTotalCountData?.totalSupportersNumber ?? 0).toLocaleString()}
+            <span style={{ fontSize: '2.45cqw', fontWeight: 700, marginLeft: '0.8cqw' }}>
+              명
+            </span>
+          </div>
+        </button>
         <button
           style={{
-            padding: '1.9vw 10vw',
-            fontSize: '3.33vw',
+            flex: '0 0 auto',
+            minHeight: '12.2cqw',
+            padding: '1.9cqw 6.4cqw',
+            fontSize: '3.1cqw',
             fontWeight: 'bold',
             color: 'white',
             border: 'none',
-            backgroundColor: '#0F418E',
-            borderRadius: '5px',
-            marginRight: '6vw',
+            background:
+              'linear-gradient(180deg, #2B5FA8 0%, #214D8B 100%)',
+            borderRadius: '1.6cqw',
+            boxShadow: '0 1cqw 2.1cqw rgba(21, 56, 106, 0.22)',
             cursor: 'pointer',
+            lineHeight: 1.2,
+            letterSpacing: '-0.02em',
           }}
           onClick={() =>
             (window.location.href =
@@ -93,30 +155,12 @@ const MainForm = () => {
           </div>
         </button>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'end', marginTop: '2vw' }}>
-        <button
-          style={{
-            padding: '1.5vw 6vw',
-            fontSize: '3vw',
-            fontWeight: 'bold',
-            color: '#0F418E',
-            border: '1px solid #0F418E',
-            backgroundColor: '#ffffff',
-            borderRadius: '5px',
-            marginRight: '6vw',
-            cursor: 'pointer',
-          }}
-          onClick={() => navigate('/theminjoo')}
-        >
-          연락처 가져오기
-        </button>
-      </div>
       <div style={{ position: 'relative', width: '100%' }}>
         <div
           style={{
-            marginTop: '10vw',
-            paddingLeft: '3.22vw',
-            paddingRight: '3.22vw',
+            marginTop: '10cqw',
+            paddingLeft: '3.22cqw',
+            paddingRight: '3.22cqw',
             display: 'flex',
             flexDirection: 'column',
           }}
@@ -157,8 +201,8 @@ const MainForm = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                marginBottom: '5vw',
-                fontSize: '4vw',
+                marginBottom: '5cqw',
+                fontSize: '4cqw',
               }}
             >
               <div
@@ -173,8 +217,8 @@ const MainForm = () => {
               >
                 <img
                   style={{
-                    width: '7vw',
-                    marginRight: '3vw',
+                    width: '7cqw',
+                    marginRight: '3cqw',
                   }}
                   src={
                     formData.isRightsMember
@@ -197,9 +241,9 @@ const MainForm = () => {
               >
                 <img
                   style={{
-                    width: '7vw',
-                    marginRight: '3vw',
-                    marginLeft: '5vw',
+                    width: '7cqw',
+                    marginRight: '3cqw',
+                    marginLeft: '5cqw',
                   }}
                   src={
                     !formData.isRightsMember
@@ -214,8 +258,8 @@ const MainForm = () => {
             <div
               style={{
                 borderTop: '1px solid #000000',
-                paddingBottom: '5.14vw',
-                marginTop: '1.2vw',
+                paddingBottom: '5.14cqw',
+                marginTop: '1.2cqw',
               }}
             />
             <FormLabel labelName={'추천인 성함을 입력해 주세요.'} />
@@ -231,7 +275,7 @@ const MainForm = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                fontSize: '3.38vw',
+                fontSize: '3.38cqw',
                 fontWeight: 700,
                 cursor: 'pointer',
               }}
@@ -241,8 +285,8 @@ const MainForm = () => {
             >
               <img
                 style={{
-                  width: '7vw',
-                  marginRight: '1.56vw',
+                  width: '7cqw',
+                  marginRight: '1.56cqw',
                 }}
                 src={
                   isPrivacyAgree
@@ -257,18 +301,18 @@ const MainForm = () => {
         </div>
         <div
           style={{
-            width: '100vw',
-            height: '6.25vw',
+            width: '100cqw',
+            height: '6.25cqw',
             backgroundColor: '#F3F3F3',
             display: 'flex',
             alignItems: 'center',
-            fontSize: '2.6vw',
+            fontSize: '2.6cqw',
             fontWeight: 600,
             cursor: 'pointer',
-            paddingLeft: '10.94vw',
-            paddingRight: '10.94vw',
-            marginTop: '5.2vw',
-            border: '0.15vw solid #EFEFEF',
+            paddingLeft: '10.94cqw',
+            paddingRight: '10.94cqw',
+            marginTop: '5.2cqw',
+            border: '0.15cqw solid #EFEFEF',
             boxSizing: 'border-box',
           }}
           onClick={() => setIsPrivacyOpen(!isPrivacyOpen)}
@@ -281,12 +325,12 @@ const MainForm = () => {
                 : '/assets/images/arrow-down.png'
             }
             alt='화살표'
-            style={{ marginLeft: '1.2vw', width: '1.61vw' }}
+            style={{ marginLeft: '1.2cqw', width: '1.61cqw' }}
           />
         </div>
         <img
           style={{
-            width: '100vw',
+            width: '100cqw',
             position: 'absolute',
             top: 0,
             left: 0,
@@ -299,10 +343,10 @@ const MainForm = () => {
       {isPrivacyOpen && (
         <div
           style={{
-            padding: '3.9vw 10.94vw',
+            padding: '3.9cqw 10.94cqw',
             height: '100%',
             backgroundColor: 'white',
-            borderBottom: '0.15vw solid #EFEFEF',
+            borderBottom: '0.15cqw solid #EFEFEF',
           }}
         >
           <div
@@ -310,7 +354,7 @@ const MainForm = () => {
               whiteSpace: 'pre-line',
               fontFamily: 'Noto music',
               height: '100%',
-              fontSize: '1.2vw',
+              fontSize: '1.2cqw',
             }}
           >
             {'개인정보 수집·이용 동의서\n' +
@@ -352,19 +396,19 @@ const MainForm = () => {
       <div
         style={{
           backgroundColor: 'white',
-          padding: '5.2vw 0',
+          padding: '5.2cqw 0',
           display: 'flex',
           justifyContent: 'center',
         }}
       >
         <button
           style={{
-            width: '30vw',
-            height: '12vw',
-            border: '0.11vw solid #000000',
-            borderRadius: '1.04vw',
+            width: '30cqw',
+            height: '12cqw',
+            border: '0.11cqw solid #000000',
+            borderRadius: '1.04cqw',
             backgroundColor: '#ffffff',
-            fontSize: '5vw',
+            fontSize: '5cqw',
             fontWeight: 600,
             cursor: 'pointer',
             boxSizing: 'border-box',
@@ -382,11 +426,11 @@ const MainForm = () => {
 const FormLabel = ({ labelName, subLabel, strongLabel }) => {
   return (
     <div
-      style={{ fontSize: '4.16vw', fontWeight: 600, marginBottom: '2.08vw' }}
+      style={{ fontSize: '4.16cqw', fontWeight: 600, marginBottom: '2.08cqw' }}
     >
       {labelName}
       {subLabel && (
-        <span style={{ color: '#939393', fontSize: '2.6vw' }}> {subLabel}</span>
+        <span style={{ color: '#939393', fontSize: '2.6cqw' }}> {subLabel}</span>
       )}
       {strongLabel && <span style={{ fontWeight: 900 }}> {strongLabel}</span>}
     </div>
@@ -399,14 +443,14 @@ const FormInput = ({ ...props }) => {
       {...props}
       style={{
         width: '100%',
-        height: '9.37vw',
+        height: '9.37cqw',
         border: 'none',
-        borderRadius: '0.78vw',
+        borderRadius: '0.78cqw',
         backgroundColor: '#EFEFEF',
-        marginBottom: '5.2vw',
-        fontSize: '4.12vw',
-        paddingLeft: '2.04vw',
-        paddingRight: '2.04vw',
+        marginBottom: '5.2cqw',
+        fontSize: '4.12cqw',
+        paddingLeft: '2.04cqw',
+        paddingRight: '2.04cqw',
         boxSizing: 'border-box',
       }}
     />

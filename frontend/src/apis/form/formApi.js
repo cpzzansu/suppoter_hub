@@ -9,3 +9,8 @@ export const modifyForm = async ({ formData }) => {
   const { data } = await api.put('/supporterHome/modifyForm', formData);
   return data;
 };
+
+export const fetchSupportersTotalCountApi = async () => {
+  const { data } = await api.get('/fetchSupportersTotalCount');
+  return data;
+};

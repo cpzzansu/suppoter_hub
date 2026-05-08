@@ -1,39 +1,128 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import {fetchRegion, fetchRegionExcel} from '../../apis/admin/adminApi.js';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {fetchModifyInfoApi, fetchRegion, fetchRegionExcel} from '../../apis/admin/adminApi.js';
+import { modifyForm } from '../../apis/form/formApi.js';
 import * as XLSX from 'xlsx';
 
-const REGIONS = ['전체','전주','군산','익산','완주','김제','남원','정읍','고창','무주','진안','임실','부안','장수','순창'];
+const REGIONS = ['전체','미적용','전주','군산','익산','완주','김제','남원','정읍','고창','무주','진안','임실','부안','장수','순창'];
+const APPLIED_REGION_KEYWORDS = ['전주','군산','익산','완주','김제','남원','정읍','고창','무주','진안','임실','부안','장수','순창'];
 
 const Region = () => {
+  const queryClient = useQueryClient();
   const [selectedRegion, setSelectedRegion] = useState('전체');
   const [keyword, setKeyword] = useState('');
   const [page, setPage] = useState(0);     // ✅ 0-based
   const [size, setSize] = useState(20);
+  const [regionApplyTarget, setRegionApplyTarget] = useState(null);
+  const isUnappliedTab = selectedRegion === '미적용';
+  const requestRegion = isUnappliedTab ? '전체' : selectedRegion;
 
   // ✅ region/keyword 바뀌면 첫 페이지로
   useEffect(() => { setPage(0); }, [selectedRegion, keyword]);
 
-  const { data, isLoading, isError, error } = useQuery({
+  const {
+    data,
+    isLoading: regionLoading,
+    isError: regionError,
+    error: regionErrorObj,
+  } = useQuery({
     queryKey: ['region', selectedRegion, keyword, page, size],
-    queryFn: () => fetchRegion({ region: selectedRegion, keyword, page, size }),
+    queryFn: () => fetchRegion({
+      region: requestRegion,
+      keyword,
+      page,
+      size,
+    }),
+    enabled: !isUnappliedTab,
     keepPreviousData: true,
   });
 
+  const {
+    data: unappliedAllData,
+    isLoading: unappliedLoading,
+    isError: unappliedError,
+    error: unappliedErrorObj,
+  } = useQuery({
+    queryKey: ['region-unapplied-all', keyword],
+    queryFn: async () => {
+      const res = await fetchRegionExcel({ region: '전체', keyword });
+      const list = res?.data ?? [];
+      return list.filter((row) => {
+        const addr = String(row?.address ?? '').trim();
+        if (!addr) return true;
+        return !APPLIED_REGION_KEYWORDS.some((regionName) => addr.includes(regionName));
+      });
+    },
+    enabled: isUnappliedTab,
+    keepPreviousData: true,
+  });
 
-
-  // ✅ Page 응답 대응
+  // ✅ 일반 탭: 서버 Page 응답 대응
   const pageObj = data?.data ?? data; // axios면 data.data, 아니면 data
-  const rows = useMemo(() => pageObj?.content ?? [], [pageObj]);
+  const serverRows = useMemo(() => pageObj?.content ?? [], [pageObj]);
 
-  const totalElements = pageObj?.totalElements ?? 0;
-  const totalPages = pageObj?.totalPages ?? 0;
+  // ✅ 미적용 탭: 전체 데이터를 프론트에서 필터 후 로컬 페이징
+  const unappliedRows = useMemo(() => {
+    const all = unappliedAllData ?? [];
+    const start = page * size;
+    return all.slice(start, start + size);
+  }, [unappliedAllData, page, size]);
+
+  const rows = isUnappliedTab ? unappliedRows : serverRows;
+  const totalElements = isUnappliedTab ? (unappliedAllData?.length ?? 0) : (pageObj?.totalElements ?? 0);
+  const totalPages = isUnappliedTab
+    ? Math.max(1, Math.ceil((unappliedAllData?.length ?? 0) / size))
+    : (pageObj?.totalPages ?? 0);
+  const isLoading = isUnappliedTab ? unappliedLoading : regionLoading;
+  const isError = isUnappliedTab ? unappliedError : regionError;
+  const error = isUnappliedTab ? unappliedErrorObj : regionErrorObj;
 
   const canDownload = !isLoading && !isError && rows.length > 0;
 
+  const updateAddressMutation = useMutation({
+    mutationFn: async ({ id, address }) => {
+      const detail = await fetchModifyInfoApi({ id });
+      const formData = {
+        id: detail.id,
+        name: detail.name ?? '',
+        phone: detail.phone ?? '',
+        address,
+        recommend: detail.recommend ?? '대표',
+        isRightsMember: detail.isRightsMember ?? false,
+      };
+      await modifyForm({ formData });
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['region'] }),
+        queryClient.invalidateQueries({ queryKey: ['region-unapplied-all'] }),
+      ]);
+      setRegionApplyTarget(null);
+      alert('주소가 수정되었습니다.');
+    },
+    onError: () => {
+      alert('주소 수정에 실패했습니다.');
+    },
+  });
+
+  const buildAddressWithRegion = (regionName, address) => {
+    const raw = String(address ?? '').trim();
+    const withoutLeadingRegion = APPLIED_REGION_KEYWORDS.reduce((acc, name) => {
+      return acc.startsWith(name) ? acc.slice(name.length).trim() : acc;
+    }, raw);
+    return withoutLeadingRegion ? `${regionName} ${withoutLeadingRegion}` : regionName;
+  };
+
+  const handlePickRegion = (row, regionName) => {
+    if (!row?.id) return;
+    const nextAddress = buildAddressWithRegion(regionName, row.address);
+    updateAddressMutation.mutate({ id: row.id, address: nextAddress });
+  };
+
   const handleDownloadExcel = async () => {
-    const res = await fetchRegionExcel({ region: selectedRegion, keyword });
-    const list = res?.data ?? [];
+    const list = isUnappliedTab
+      ? (unappliedAllData ?? [])
+      : ((await fetchRegionExcel({ region: requestRegion, keyword }))?.data ?? []);
 
     // ✅ 서버가 전체 명단을 id, name, phone, address, recommenderName 형태로 준다고 가정
     const excelRows = list.map((r) => ({
@@ -160,9 +249,27 @@ const Region = () => {
                     <tr><td style={td} colSpan={5 + maxDepth}>데이터가 없습니다.</td></tr>
                 ) : (
                     rows.map((r, idx) => (
-                        <tr key={`${r.id ?? ''}-${page}-${idx}`}>
+                      <React.Fragment key={`${r.id ?? ''}-${page}-${idx}`}>
+                        <tr>
                           <td style={td}>{page * size + idx + 1}</td>
-                          <td style={td}>{r.name ?? ''}</td>
+                          <td style={td}>
+                            <button
+                              type="button"
+                              onClick={() => setRegionApplyTarget(r)}
+                              disabled={updateAddressMutation.isPending}
+                              style={{
+                                border: 'none',
+                                background: 'transparent',
+                                color: '#2f6fed',
+                                cursor: updateAddressMutation.isPending ? 'not-allowed' : 'pointer',
+                                textDecoration: 'underline',
+                                padding: 0,
+                                fontSize: '14px',
+                              }}
+                            >
+                              {r.name ?? ''}
+                            </button>
+                          </td>
 
                           {Array.from({ length: maxDepth }).map((_, i) => (
                               <td key={i} style={td}>
@@ -173,6 +280,50 @@ const Region = () => {
                           <td style={td}>{r.phone ?? ''}</td>
                           <td style={{ ...td, textAlign: 'left' }}>{r.address ?? ''}</td>
                         </tr>
+                        {regionApplyTarget?.id === r.id && (
+                          <tr>
+                            <td style={{ ...td, textAlign: 'left' }} colSpan={5 + maxDepth}>
+                              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                                {APPLIED_REGION_KEYWORDS.map((regionName) => (
+                                  <button
+                                    key={`${r.id}-${regionName}`}
+                                    type="button"
+                                    onClick={() => handlePickRegion(r, regionName)}
+                                    disabled={updateAddressMutation.isPending}
+                                    style={{
+                                      padding: '6px 10px',
+                                      borderRadius: 8,
+                                      border: '1px solid #00B887',
+                                      background: '#fff',
+                                      color: '#00B887',
+                                      cursor: updateAddressMutation.isPending ? 'not-allowed' : 'pointer',
+                                      fontWeight: 700,
+                                    }}
+                                  >
+                                    {regionName}
+                                  </button>
+                                ))}
+                                <button
+                                  type="button"
+                                  onClick={() => setRegionApplyTarget(null)}
+                                  disabled={updateAddressMutation.isPending}
+                                  style={{
+                                    marginLeft: 8,
+                                    padding: '6px 10px',
+                                    borderRadius: 8,
+                                    border: '1px solid #ddd',
+                                    background: '#fff',
+                                    color: '#666',
+                                    cursor: updateAddressMutation.isPending ? 'not-allowed' : 'pointer',
+                                  }}
+                                >
+                                  닫기
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))
                 )}
                 </tbody>
